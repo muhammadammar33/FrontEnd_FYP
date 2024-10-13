@@ -8,15 +8,32 @@ import { getUserbyId } from "./data/user"
 const prisma = new PrismaClient()
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+    pages: {
+        signIn: "/auth/Login",
+        signOut: "/auth/Login",
+        error: "/auth/Error",
+        verifyRequest: "/auth/verify-request",
+        newUser: "/auth/new-user",
+    },
+    events: {
+        async linkAccount({ user }){
+            await db.user.update({
+                where: { id: user.id },
+                data: {
+                    emailVerified: new Date()
+                }
+            })
+        }
+    },
     callbacks: {
-        async signIn({ user }){
-            const existingUser = await getUserbyId(user.id);
+        // async signIn({ user }){
+        //     const existingUser = await getUserbyId(user.id);
 
-            if (!existingUser || !existingUser.emailVerified) {
-                return false;
-            }
-            return true;
-        },
+        //     if (!existingUser || !existingUser.emailVerified) {
+        //         return false;
+        //     }
+        //     return true;
+        // },
 
         async session({ session, token }: { session: Session & { user: { id?: string, role?: "ADMIN" | "SELLER" | "BUYER" } }, token: any }){
             console.log("session", session, token);
