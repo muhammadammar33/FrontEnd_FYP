@@ -3,7 +3,7 @@
 import exp from "constants";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Header } from "./header";
-import { Socail } from "./socail";
+import { Social } from "./social";
 import { BackButton } from "./back-button";
 
 interface CardWrapperProps {
@@ -30,14 +30,14 @@ export const CardWrapper = ({
     return (
         <Card className="w-[600px] shadow-md p-2">
             <CardHeader>
-                <Header label={pageLabel} labeled={headerLabel}/>
+                <Header label={headerLabel}/>
             </CardHeader>
             <CardContent>
                 {children}
             </CardContent>
             {showSocial && (
                 <CardFooter>
-                    <Socail/>
+                    <Social/>
                 </CardFooter>
             )}
             <CardFooter>

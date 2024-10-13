@@ -12,14 +12,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-        setLoading(false);
-        router.push('/auth/Login'); // Redirect to login page
-        }, 1000); // Simulate loading time
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setLoading(false);
+    //         router.push('/auth/Login'); // Redirect to login page
+    //     }, 1000); // Simulate loading time
 
-        return () => clearTimeout(timer);
-    }, [router]);
+    //     return () => clearTimeout(timer);
+    // }, [router]);
 
     return (
         <>

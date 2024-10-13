@@ -3,7 +3,7 @@
 import {FcGoogle} from "react-icons/fc";
 import { Button } from "../ui/button";
 
-export const Socail = () => {
+export const Social = () => {
     return (
         <div className="flex items-center justify-center w-full gap-x-2">
             <Button
