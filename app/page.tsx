@@ -1,5 +1,5 @@
 import React from 'react';
-import Layout from '../components/Preloader/Layout';
+import Layout from '@/components/Preloader/Layout';
 
 export default function Home() {
   return (

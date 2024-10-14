@@ -8,6 +8,18 @@ const passRegex = new RegExp(
     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
 );
 
+export const NewPasswordSchema = z.object({
+    password: z.string().regex(passRegex, {
+        message: "Password is required atleast 8 characters long, 1 letter, 1 number and 1 special character",
+    }),
+});
+
+export const ResetSchema = z.object({
+    email: z.string().email({
+        message: "Email is required",
+    }),
+});
+
 export const LoginSchema = z.object({
     email: z.string().email({
         message: "Email is required",

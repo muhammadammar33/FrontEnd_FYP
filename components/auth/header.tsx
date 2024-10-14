@@ -2,7 +2,7 @@
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Image from 'next/image';
-import Elysian from '../../public/images/Elysian.png';
+import Elysian from '@/public/images/Elysian.png';
 
 const font = Poppins({
     subsets: ["latin"],
@@ -10,7 +10,7 @@ const font = Poppins({
 });
 
 interface HeaderProps {
-    label: string;
+    label?: string;
 }
 
 export const Header = ({ label }: HeaderProps) => {

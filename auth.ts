@@ -26,14 +26,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
     },
     callbacks: {
-        // async signIn({ user }){
-        //     const existingUser = await getUserbyId(user.id);
+        async signIn({ user, account }){
 
-        //     if (!existingUser || !existingUser.emailVerified) {
-        //         return false;
-        //     }
-        //     return true;
-        // },
+            if (account?.provider !== "credentials") {
+                return true;
+            }
+
+            if (!user.id) {
+                return false;
+            }
+
+            const existingUser = await getUserbyId(user.id);
+
+            if (!existingUser || !existingUser?.emailVerified) {
+                return false;
+            }
+
+            // TODO: Add two-factor authentication check here
+            
+            return true;
+        },
 
         async session({ session, token }: { session: Session & { user: { id?: string, role?: "ADMIN" | "SELLER" | "BUYER" } }, token: any }){
             console.log("session", session, token);

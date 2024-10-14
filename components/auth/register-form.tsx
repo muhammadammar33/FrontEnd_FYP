@@ -13,11 +13,11 @@ import {
     FormMessage
 } from "../ui/form";
 
-import { CardWrapper } from "./card-wrapper";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { FormError } from "../form-errors/form-error";
-import { FormSuccess } from "../form-success/form-success";
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/form-errors/form-error";
+import { FormSuccess } from "@/components/form-success/form-success";
 import { register } from "@/actions/register";
 import { useState } from "react";
 
@@ -47,7 +47,6 @@ export const RegisterForm = () => {
 
     return (
         <CardWrapper
-            pageLabel="Register"
             headerLabel="Create an account!"
             backButtonLabel="Already have an account?"
             backButtonHref="/auth/Login"

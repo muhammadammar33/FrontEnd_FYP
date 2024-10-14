@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 interface BackButtonProps {
-    label: string;
-    href: string;
+    label?: string;
+    href?: string;
 };
 
 export const BackButton = ({ label, href }: BackButtonProps) => {
@@ -17,7 +17,7 @@ export const BackButton = ({ label, href }: BackButtonProps) => {
             asChild
             onClick={() => {}}
         >
-            <Link href={href}>
+            <Link href={href || "#"}>
                 {label}
             </Link>
         </Button>

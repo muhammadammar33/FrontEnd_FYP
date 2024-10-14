@@ -11,16 +11,17 @@ import {
     FormItem,
     FormLabel,
     FormMessage
-} from "../ui/form";
+} from "@/components/ui/form";
 
-import { CardWrapper } from "./card-wrapper";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { FormError } from "../form-errors/form-error";
-import { FormSuccess } from "../form-success/form-success";
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/form-errors/form-error";
+import { FormSuccess } from "@/components/form-success/form-success";
 import { login } from "@/actions/login";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export const LoginForm = () => {
     const searchParams = useSearchParams();
@@ -46,13 +47,12 @@ export const LoginForm = () => {
         login(values)
         .then((data) => {
             setError(data?.error);
-            // setSuccess(data?.success);
+            setSuccess(data?.success);
         })
     }
 
     return (
         <CardWrapper
-            pageLabel="Login"
             headerLabel="Welcome back!"
             backButtonLabel="Don't have an account?"
             backButtonHref="/auth/Register"
@@ -97,6 +97,16 @@ export const LoginForm = () => {
                                             type="password"
                                         />
                                     </FormControl>
+                                    <Button
+                                        size="sm"
+                                        variant="link"
+                                        asChild
+                                        className="px-0 font-normal text-sky-300"
+                                    >
+                                        <Link href="/auth/Reset">
+                                            Forgot password?
+                                        </Link>
+                                    </Button>
                                     <FormMessage />
                                 </FormItem>
                             )}
