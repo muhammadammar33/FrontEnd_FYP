@@ -1,4 +1,5 @@
 import NextAuth, { Session } from "next-auth"
+import { UserRole } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
 import authConfig from "./auth.config"
@@ -57,16 +58,42 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             return true;
         },
 
-        async session({ session, token }: { session: Session & { user: { id?: string, role?: "ADMIN" | "SELLER" | "BUYER" } }, token: any }){
-            console.log("session", session, token);
+        // async session({ session, token }: { session: Session & { user: { id?: string, role?: "ADMIN" | "SELLER" | "BUYER" } }, token: any }){
+        //     console.log("session", session, token);
 
-            if(session.user && token.sub){
+        //     if(session.user && token.sub){
+        //         session.user.id = token.sub;
+        //     }
+
+        //     if(session.user && token.role){
+        //         session.user.role = token.role;
+        //     }
+            
+        //     if(session.user && token.role){
+        //         session.user.role = token.role;
+        //     }
+        //     return session;
+        // },
+
+        async session({ token, session }) {
+            if (token.sub && session.user) {
                 session.user.id = token.sub;
             }
 
-            if(session.user && token.role){
-                session.user.role = token.role;
+            if (token.role && session.user) {
+                session.user.role = token.role as UserRole;
             }
+
+            if (session.user) {
+                session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
+            }
+
+            if (session.user) {
+                session.user.name = token.name;
+                session.user.email = token.email ?? '';
+                session.user.isOAuth = token.isOAuth as boolean;
+            }
+
             return session;
         },
 
@@ -79,6 +106,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                 return token;
             }
             token.role = existingUser.role;
+            token.IsTwoFactorEnabled = existingUser.isTwoFactorEnabled;
             return token;
         }
     },
