@@ -3,12 +3,12 @@
 import * as z from "zod";
 import bcrypt from "bcryptjs";
 
-import { update } from "@/auth";
+// import { update } from "@/auth";
 import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
-import { getUserByEmail, getUserById } from "@/data/user";
+import { getUserbyEmail, getUserbyId } from "@/data/user";
 import { currentUser } from "@/lib/auth";
-import { generateVerificationToken } from "@/lib/tokens";
+import { generateVerificationToken } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/mail";
 
 export const settings = async (
@@ -20,7 +20,7 @@ export const settings = async (
         return { error: "Unauthorized" }
     }
 
-    const dbUser = await getUserById(user.id);
+    const dbUser = await getUserbyId(user.id);
 
     if (!dbUser) {
         return { error: "Unauthorized" }
@@ -34,7 +34,7 @@ export const settings = async (
     }
 
     if (values.email && values.email !== user.email) {
-        const existingUser = await getUserByEmail(values.email);
+        const existingUser = await getUserbyEmail(values.email);
 
         if (existingUser && existingUser.id !== user.id) {
         return { error: "Email already in use!" }
@@ -76,14 +76,14 @@ export const settings = async (
         }
     });
 
-    update({
-        user: {
-        name: updatedUser.name,
-        email: updatedUser.email,
-        isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
-        role: updatedUser.role,
-        }
-    });
+    // update({
+    //     user: {
+    //     name: updatedUser.name,
+    //     email: updatedUser.email,
+    //     isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
+    //     role: updatedUser.role,
+    //     }
+    // });
 
     return { success: "Settings Updated!" }
 }
