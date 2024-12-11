@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
 import { error } from "console";
 import { getUserbyEmail } from "@/data/user";
+import { getUserbyPhone } from "@/data/user";
 import { generateVerificationToken } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/mail";
 
@@ -17,7 +18,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         return {error: "Invalid fields"};
     }
 
-    const { name, phone, email, password } = validateFields.data;
+    const { name, phone, email, password, role } = validateFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const existingEmail = await getUserbyEmail(email);
@@ -26,7 +27,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         return {error: "Email already in use"};
     }
     
-    const existingPhone = await getUserbyEmail(phone);
+    const existingPhone = await getUserbyPhone(phone);
 
     if (existingPhone) {
         return {error: "Phone already in use"};
@@ -38,6 +39,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
             phone,
             email,
             password: hashedPassword,
+            role,
         },
     });
 

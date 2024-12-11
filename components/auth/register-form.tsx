@@ -31,6 +31,7 @@ export const RegisterForm = () => {
             phone: "",
             email: "",
             password: "",
+            role: undefined,
         },
     });
 
@@ -122,6 +123,25 @@ export const RegisterForm = () => {
                                             placeholder="********"
                                             type="password"
                                         />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="role"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-sky-300">Role</FormLabel>
+                                    <FormControl>
+                                        <select 
+                                            {...field}
+                                            className="w-full px-3 py-2 text-gray-400 text-sm rounded-md border border-input bg-transparent focus:outline-none focus:border-sky-300"
+                                        >
+                                            <option value="SELLER">Seller</option>
+                                            <option value="BUYER">Buyer</option>
+                                        </select>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

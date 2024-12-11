@@ -9,6 +9,15 @@ export const getUserbyEmail = async (email: string) => {
     }
 };
 
+export const getUserbyPhone = async (phone: string) => {
+    try {
+        const user = await db.user.findUnique({ where: { phone } });
+        return user;
+    } catch {
+        return null;
+    }
+};
+
 export const getUserbyId = async (id: string) => {
     try {
         const user = await db.user.findUnique({ where: { id } });

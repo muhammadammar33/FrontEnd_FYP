@@ -39,6 +39,9 @@ export const RegisterSchema = z.object({
     password: z.string().regex(passRegex, {
         message: "Password is required atleast 8 characters long, 1 letter, 1 number and 1 special character",
     }),
+    role: z.enum([UserRole.ADMIN, UserRole.BUYER, UserRole.SELLER], {
+        message: "Role is required",
+    }),
 });
 
 export const SettingsSchema = z.object({

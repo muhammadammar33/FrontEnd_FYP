@@ -1,7 +1,6 @@
 "use server";
 
 import * as z from "zod";
-
 import { LoginSchema } from "@/schemas";
 import { error } from "console";
 import { signIn } from "@/auth";
@@ -93,21 +92,41 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         }
     }
 
-    try {
-        await signIn("credentials", {
-            email,
-            password,
-            redirectTo: DEFAULT_LOGIN_REDIRECT
-        });
-    } catch (error) {
-        if (error instanceof AuthError) {
-            switch (error.type) {
-                case "CredentialsSignin":
-                    return {error: "Invalid credentials"};
-                default:
-                    return {error: "An unknown error occurred"};
+    if (existingUser.role !== undefined) {
+        try {
+            await signIn("credentials", {
+                email,
+                password,
+                redirectTo: DEFAULT_LOGIN_REDIRECT
+            });
+        } catch (error) {
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case "CredentialsSignin":
+                        return {error: "Invalid credentials"};
+                    default:
+                        return {error: "An unknown error occurred"};
+                }
             }
+            throw error;
         }
-        throw error;
+    } else {
+        try {
+            await signIn("credentials", {
+                email,
+                password,
+                redirectTo: "/auth/select-role"
+            });
+        } catch (error) {
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case "CredentialsSignin":
+                        return {error: "Invalid credentials"};
+                    default:
+                        return {error: "An unknown error occurred"};
+                }
+            }
+            throw error;
+        }
     }
 }

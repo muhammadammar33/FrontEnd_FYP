@@ -14,9 +14,9 @@ interface PreloaderProps {
 const Preloader: React.FC<PreloaderProps> = ({ loading }) => {
     return (
         <div
-        className={`fixed inset-0 z-50 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 to-blue-900 transition-opacity duration-3000 ${
-            loading ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 to-blue-900 transition-opacity duration-3000 ${
+                loading ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
             <div className="absolute inset-0 flex items-center justify-center">
                 <Image className="absolute inset-0 w-full h-full object-cover" src={BackImg} alt="BackgroundImage" />
@@ -29,14 +29,14 @@ const Preloader: React.FC<PreloaderProps> = ({ loading }) => {
                     </LoginButton>
                 </div>
             </div>
-        <div className="relative w-full h-full">
-            <div className="absolute inset-0 rounded-e-full w-1/2 h-full bg-gray-700 origin-left animate-open-left flex items-center justify-end p-5 z-50">
-                <h1 className="text-9xl font-serif text-sky-300 font-bold text-right">le'ELY</h1>
+            <div className="relative w-full h-full">
+                <div className="absolute inset-0 rounded-e-full w-1/2 h-full bg-gray-700 origin-left animate-open-left flex items-center justify-end p-5 z-50">
+                    <h1 className="text-9xl font-serif text-sky-300 font-bold text-right">le'ELY</h1>
+                </div>
+                <div className="absolute inset-0 rounded-s-full left-1/2 w-1/2 h-full bg-gray-700 origin-right animate-open-right flex items-center justify-start p-5 z-50">
+                    <h1 className="text-9xl font-serif text-sky-300 font-bold text-left">SIAN</h1>
+                </div>
             </div>
-            <div className="absolute inset-0 rounded-s-full left-1/2 w-1/2 h-full bg-gray-700 origin-right animate-open-right flex items-center justify-start p-5 z-50">
-                <h1 className="text-9xl font-serif text-sky-300 font-bold text-left">SIAN</h1>
-            </div>
-        </div>
         </div>
     );
 };
