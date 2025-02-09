@@ -9,13 +9,10 @@ import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 
 const prisma = new PrismaClient()
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const { handlers: {GET, POST}, auth, handlers, signIn, signOut } = NextAuth({
     pages: {
         signIn: "/auth/Login",
-        signOut: "/auth/Login",
         error: "/auth/Error",
-        verifyRequest: "/auth/verify-request",
-        newUser: "/auth/new-user",
     },
     events: {
         async linkAccount({ user }){
@@ -49,7 +46,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
                 if (!twoFactorConfirmation) return false;
 
-                // Delete two factor confirmation for next sign in
                 await db.twoFactorConfirmation.delete({
                 where: { id: twoFactorConfirmation.id }
                 });

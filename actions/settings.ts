@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
 import { getUserbyEmail, getUserbyId } from "@/data/user";
 import { currentUser } from "@/lib/auth";
+import { currentRole } from "@/lib/auth";
 import { generateVerificationToken } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/mail";
 
@@ -17,6 +18,12 @@ export const settings = async (
     const user = await currentUser();
 
     if (!user) {
+        return { error: "Unauthorized" }
+    }
+
+    const Role = await currentRole();
+
+    if (Role !== "BUYER") {
         return { error: "Unauthorized" }
     }
 
@@ -53,17 +60,17 @@ export const settings = async (
 
     if (values.password && values.newPassword && dbUser.password) {
         const passwordsMatch = await bcrypt.compare(
-        values.password,
-        dbUser.password,
+            values.password,
+            dbUser.password,
         );
 
         if (!passwordsMatch) {
-        return { error: "Incorrect password!" };
+            return { error: "Incorrect password!" };
         }
 
         const hashedPassword = await bcrypt.hash(
-        values.newPassword,
-        10,
+            values.newPassword,
+            10,
         );
         values.password = hashedPassword;
         values.newPassword = undefined;

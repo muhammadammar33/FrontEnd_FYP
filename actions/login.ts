@@ -5,6 +5,7 @@ import { LoginSchema } from "@/schemas";
 import { error } from "console";
 import { signIn } from "@/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { SellerRoute } from "@/routes";
 import { AuthError } from "next-auth";
 import { getUserbyEmail } from "@/data/user";
 import { 
@@ -92,7 +93,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         }
     }
 
-    if (existingUser.role !== undefined) {
+    if (existingUser.role === "BUYER") {
         try {
             await signIn("credentials", {
                 email,
@@ -110,12 +111,12 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
             }
             throw error;
         }
-    } else {
+    } else if (existingUser.role === "SELLER") {
         try {
             await signIn("credentials", {
                 email,
                 password,
-                redirectTo: "/auth/select-role"
+                redirectTo: SellerRoute
             });
         } catch (error) {
             if (error instanceof AuthError) {
@@ -128,5 +129,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
             }
             throw error;
         }
+    } else {
+        return {error: "Invalid role"};
     }
 }
