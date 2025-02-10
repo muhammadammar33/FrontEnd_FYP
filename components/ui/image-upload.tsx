@@ -27,8 +27,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }, [])
     
     const onUpload = (result: any) => {
-        onChange(result.info.secure_url);
-    }
+        console.log("Upload result:", result);
+        const secureUrl = result.info.secure_url;
+        console.log("Secure URL:", secureUrl);
+        onChange(secureUrl);
+};
 
     if (!isMounted) {
         return null;
@@ -39,6 +42,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <div>
             <div className='mb-4 flex items-center gap-4'>
                 {value.map((url) => (
+                    console.log(url),
                     <div key={url} className='relative w-[200px] h-[200px] rounded-md overflow-hidden'>
                         <div className='z-10 absolute top-2 right-2'>
                             <Button type='button' onClick={() => onRemove(url)} variant="destructive" size="icon">
@@ -49,17 +53,21 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     </div>
                 ))}
             </div>
-            <CldUploadWidget onUpload={onUpload} uploadPreset='xd1zgfvt'>
+            <CldUploadWidget onSuccess={onUpload} uploadPreset='elysian'>
                 {({ open }) => {
                     const onClick = () => {
+                        console.log('Uploading Image');
                         open();
                     }
 
                     return (
+                        <>
                         <Button type='button' disabled={disabled} variant={'secondary'} onClick={onClick}>
                             <ImagePlus className='h-4 w-4 mr-2' />
                             Upload an Image
                         </Button>
+                        {/* <pre>{JSON.stringify(value, null, 2)}</pre> */}
+                        </>
                     )
                 }}
             </CldUploadWidget>
