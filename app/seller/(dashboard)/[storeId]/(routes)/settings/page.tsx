@@ -7,7 +7,6 @@ const SettingsPage = async ({ params }:{ params: Promise<{ storeId: string }> })
     const { storeId } = await params;
     const user = await currentUser();
     const userId = user?.id;
-    const storeIdNumber = parseInt(storeId, 10);
 
     if(!userId) {
         redirect('/auth/Login');
@@ -15,7 +14,7 @@ const SettingsPage = async ({ params }:{ params: Promise<{ storeId: string }> })
 
     const store = await db.stores.findFirst({
         where: {
-            Id: storeIdNumber,
+            Id: storeId,
             UserId: userId
         }
     })

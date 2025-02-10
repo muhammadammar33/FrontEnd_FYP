@@ -30,7 +30,7 @@ export default async function Dashboard({children, params}: DashboardType) {
 
     return (
         <>
-            {/* <Navbar /> */}
+            <Navbar />
             {children}
         </>
     )
