@@ -70,7 +70,7 @@ export const BillboardForm: React.FC<SettingsFromProps> = ({ initialData }) => {
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`http://localhost:5028/api/${params.storeId}/billboards/${params.billboardId}`)
+            await axios.delete(`/api/${params.storeId}/billboards/${params.billboardId}`)
             router.refresh();
             router.push(`/seller/${params.storeId}/billboards`)
             toast.success("Billboard deleted.")
