@@ -6,7 +6,7 @@ const BillboardPage = async ({ params }: { params: { billboardId: string } }) =>
     
     const billboard = billboardId === "new" 
         ? null 
-        : await db.billboard.findUnique({ 
+        : await db.billboards.findUnique({ 
             where: {
             Id: billboardId
             }

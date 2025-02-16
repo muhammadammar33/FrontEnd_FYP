@@ -10,7 +10,7 @@ const BillboardsPage = async ({
 }) => {
 
     const { storeId } = await params;
-    const billboards = await db.billboard.findMany({
+    const billboards = await db.billboards.findMany({
         where: {
             StoreId: storeId,
         },

@@ -12,7 +12,7 @@ export async function GET (
             return new NextResponse("Billboard id is required", { status: 400 });
         }
 
-        const billboard = await db.billboard.findUnique({
+        const billboard = await db.billboards.findUnique({
             where: {
                 Id: billboardId,
             }
@@ -71,7 +71,7 @@ export async function PATCH (
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        const billboard = await db.billboard.updateMany({
+        const billboard = await db.billboards.updateMany({
             where: {
                 Id: billboardId
             },
@@ -118,7 +118,7 @@ export async function DELETE (
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        const billboard = await db.billboard.deleteMany({
+        const billboard = await db.billboards.deleteMany({
             where: {
                 Id: billboardId,
             }

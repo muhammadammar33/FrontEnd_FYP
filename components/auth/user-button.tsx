@@ -8,6 +8,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
     Avatar,
@@ -30,7 +31,12 @@ export const UserButton = () => {
                 </AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40" align="end">
+            <DropdownMenuContent className="w-60" align="end">
+                {user?.name && (
+                    <DropdownMenuLabel className="font-semibold">
+                        {user.name}
+                    </DropdownMenuLabel>
+                )}
                 <LogoutButton>
                     <DropdownMenuItem>
                         <ExitIcon className="h-4 w-4 mr-2" />

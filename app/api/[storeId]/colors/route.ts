@@ -10,22 +10,20 @@ export async function POST(
         const user = await currentUser();
         const userId = user?.id;
         const body = await req.json();
-        console.log(body);
-        console.log((await params).storeId);
 
-        const { Label, ImageUrl } = body;
+        const { Name, Value } = body;
         const { storeId } = await params; 
 
         if (!userId) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!Label) {
-            return new NextResponse("Label is required", { status: 400});
+        if (!Name) {
+            return new NextResponse("Name is required", { status: 400});
         }
 
-        if (!ImageUrl) {
-            return new NextResponse("Image Url is required", { status: 400});
+        if (!Value) {
+            return new NextResponse("Value is required", { status: 400});
         }
 
         if (!storeId) {
@@ -43,21 +41,21 @@ export async function POST(
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        const billboard = await db.billboards.create({
+        const color = await db.colors.create({
             data : {
                 Id: crypto.randomUUID(),
-                Label: Label,
-                ImageUrl: ImageUrl,
+                Name,
+                Value,
                 StoreId: storeId,
                 CreatedAt: new Date(),
                 UpdatedAt: new Date(),
             }
         })
 
-        return NextResponse.json(billboard);
+        return NextResponse.json(color);
 
     } catch (err) {
-        console.log(`[BILLBOARDS_POST] ${err}`);
+        console.log(`[COLORS_POST] ${err}`);
         return new NextResponse(`Internal error`, { status: 500})
     }
 }
@@ -68,21 +66,21 @@ export async function GET(
 ) {
     try {
         const { storeId } = await params; 
-
+        
         if (!storeId) {
             return new NextResponse("Store Id is required", { status: 400});
         }
 
-        const billboards = await db.billboards.findMany({
+        const colors = await db.colors.findMany({
             where: {
                 StoreId: storeId
             }
         })
 
-        return NextResponse.json(billboards);
+        return NextResponse.json(colors);
 
     } catch (err) {
-        console.log(`[BILLBOARDS_GET] ${err}`);
+        console.log(`[COLORS_GET] ${err}`);
         return new NextResponse(`Internal error`, { status: 500})
     }
 }

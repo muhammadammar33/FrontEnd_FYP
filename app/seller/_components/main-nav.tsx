@@ -11,31 +11,31 @@ export function MainNav({ className, ...props } : React.HTMLAttributes<HTMLEleme
     const routes = [{
         href: `/seller/${params.storeId}`,
         label: 'Overview',
-        active: pathname === `/${params.storeId}`
+        active: pathname === `/seller/${params.storeId}`
     }, {
         href: `/seller/${params.storeId}/billboards`,
         label: 'Billboards',
-        active: pathname === `/${params.storeId}/billboards`
+        active: pathname === `/seller/${params.storeId}/billboards`
     }, {
-        href: `/${params.storeId}/categories`,
+        href: `/seller/${params.storeId}/categories`,
         label: 'Categories',
-        active: pathname === `/${params.storeId}/categories`
+        active: pathname === `/seller/${params.storeId}/categories`
     }, {
-        href: `/${params.storeId}/sizes`,
+        href: `/seller/${params.storeId}/sizes`,
         label: 'Sizes',
-        active: pathname === `/${params.storeId}/sizes`
+        active: pathname === `/seller/${params.storeId}/sizes`
     }, {
-        href: `/${params.storeId}/colors`,
+        href: `/seller/${params.storeId}/colors`,
         label: 'Colors',
-        active: pathname === `/${params.storeId}/colors`
+        active: pathname === `/seller/${params.storeId}/colors`
     }, {
-        href: `/${params.storeId}/products`,
+        href: `/seller/${params.storeId}/products`,
         label: 'Products',
-        active: pathname === `/${params.storeId}/products`
+        active: pathname === `/seller/${params.storeId}/products`
     }, {
-        href: `/${params.storeId}/orders`,
+        href: `/seller/${params.storeId}/orders`,
         label: 'Orders',
-        active: pathname === `/${params.storeId}/orders`
+        active: pathname === `/seller/${params.storeId}/orders`
     }, {
         href: `/seller/${params.storeId}/settings`,
         label: 'Settings',

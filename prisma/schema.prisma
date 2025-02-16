@@ -7,41 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Billboard {
-  Id        String   @id(map: "PK_Billboard") @db.Uuid
-  StoreId   String   @db.Uuid
-  Label     String   @db.VarChar(255)
-  ImageUrl  String
-  CreatedAt DateTime @db.Timestamptz(6)
-  UpdatedAt DateTime @db.Timestamptz(6)
-  Stores    Stores   @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Billboard_Stores_StoreId")
-
-  @@index([StoreId], map: "IX_Billboard_StoreId")
-}
-
 model Products {
-  ProductID   Int      @id(map: "PK_Products") @default(autoincrement())
-  StoreID     Int
-  ProductName String
-  Description String
-  Price       Decimal  @db.Decimal
-  Stock       Int
-  CreatedDate DateTime @db.Timestamptz(6)
-  StoreId     String?  @db.Uuid
-  Stores      Stores?  @relation(fields: [StoreId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Stores_StoreId")
+  ProductID    Int         @id(map: "PK_Products") @default(autoincrement())
+  StoreID      Int
+  ProductName  String
+  Description  String
+  Price        Decimal     @db.Decimal
+  Stock        Int
+  CreatedDate  DateTime    @db.Timestamptz(6)
+  StoreId      String?     @db.Uuid
+  CategoriesId String?     @db.Uuid
+  SizeId       String?     @db.Uuid
+  ColorId      String?     @db.Uuid
+  Categories   Categories? @relation(fields: [CategoriesId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Categories_CategoriesId")
+  Colors       Colors?     @relation(fields: [ColorId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Colors_ColorId")
+  Sizes        Sizes?      @relation(fields: [SizeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Sizes_SizeId")
+  Stores       Stores?     @relation(fields: [StoreId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Stores_StoreId")
 
   @@index([StoreId], map: "IX_Products_StoreId")
+  @@index([CategoriesId], map: "IX_Products_CategoriesId")
+  @@index([SizeId], map: "IX_Products_SizeId")
+  @@index([ColorId], map: "IX_Products_ColorId")
 }
 
 model Stores {
-  Id          String      @id(map: "PK_Stores") @db.Uuid
-  Name        String      @db.VarChar(100)
-  Description String      @db.VarChar(500)
+  Id          String       @id(map: "PK_Stores") @db.Uuid
+  Name        String       @db.VarChar(100)
+  Description String       @db.VarChar(500)
   UserId      String
-  CreatedAt   DateTime    @db.Timestamptz(6)
-  UpdatedAt   DateTime    @db.Timestamptz(6)
-  Billboard   Billboard[]
+  CreatedAt   DateTime     @db.Timestamptz(6)
+  UpdatedAt   DateTime     @db.Timestamptz(6)
+  Billboards  Billboards[]
+  Categories  Categories[]
+  Colors      Colors[]
   Products    Products[]
+  Sizes       Sizes[]
 }
 
 model EFMigrationsHistory {
@@ -117,6 +117,60 @@ model TwoFactorConfirmation {
   id     String @id @default(cuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Billboards {
+  Id         String       @id(map: "PK_Billboards") @db.Uuid
+  StoreId    String       @db.Uuid
+  Label      String       @db.VarChar(255)
+  ImageUrl   String
+  CreatedAt  DateTime     @db.Timestamptz(6)
+  UpdatedAt  DateTime     @db.Timestamptz(6)
+  Stores     Stores       @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Billboards_Stores_StoreId")
+  Categories Categories[]
+
+  @@index([StoreId], map: "IX_Billboards_StoreId")
+}
+
+model Categories {
+  Id          String     @id(map: "PK_Categories") @db.Uuid
+  StoreId     String     @db.Uuid
+  BillBoardId String     @db.Uuid
+  Name        String     @db.VarChar(255)
+  CreatedAt   DateTime   @db.Timestamptz(6)
+  UpdatedAt   DateTime   @db.Timestamptz(6)
+  Billboards  Billboards @relation(fields: [BillBoardId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Billboards_BillBoardId")
+  Stores      Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Stores_StoreId")
+  Products    Products[]
+
+  @@index([BillBoardId], map: "IX_Categories_BillBoardId")
+  @@index([StoreId], map: "IX_Categories_StoreId")
+}
+
+model Sizes {
+  Id        String     @id(map: "PK_Sizes") @db.Uuid
+  StoreId   String     @db.Uuid
+  Name      String     @db.VarChar(255)
+  Value     String
+  CreatedAt DateTime   @db.Timestamptz(6)
+  UpdatedAt DateTime   @db.Timestamptz(6)
+  Products  Products[]
+  Stores    Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Sizes_Stores_StoreId")
+
+  @@index([StoreId], map: "IX_Sizes_StoreId")
+}
+
+model Colors {
+  Id        String     @id(map: "PK_Colors") @db.Uuid
+  StoreId   String     @db.Uuid
+  Name      String     @db.VarChar(255)
+  Value     String
+  CreatedAt DateTime   @db.Timestamptz(6)
+  UpdatedAt DateTime   @db.Timestamptz(6)
+  Stores    Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Colors_Stores_StoreId")
+  Products  Products[]
+
+  @@index([StoreId], map: "IX_Colors_StoreId")
 }
 
 enum UserRole {
