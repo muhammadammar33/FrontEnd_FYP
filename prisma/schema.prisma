@@ -8,26 +8,30 @@ datasource db {
 }
 
 model Products {
-  ProductID    Int         @id(map: "PK_Products") @default(autoincrement())
-  StoreID      Int
-  ProductName  String
-  Description  String
-  Price        Decimal     @db.Decimal
-  Stock        Int
-  CreatedDate  DateTime    @db.Timestamptz(6)
-  StoreId      String?     @db.Uuid
-  CategoriesId String?     @db.Uuid
-  SizeId       String?     @db.Uuid
-  ColorId      String?     @db.Uuid
-  Categories   Categories? @relation(fields: [CategoriesId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Categories_CategoriesId")
-  Colors       Colors?     @relation(fields: [ColorId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Colors_ColorId")
-  Sizes        Sizes?      @relation(fields: [SizeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Sizes_SizeId")
-  Stores       Stores?     @relation(fields: [StoreId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Products_Stores_StoreId")
+  Description String      @db.VarChar(500)
+  Price       Decimal     @db.Decimal
+  Stock       Int
+  UpdatedAt   DateTime    @db.Timestamptz(6)
+  StoreId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  SizeId      String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  ColorId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  Id          String      @id(map: "PK_Products") @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  CategoryId  String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  CreatedAt   DateTime    @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  IsArchived  Boolean     @default(false)
+  IsFeatured  Boolean     @default(false)
+  Name        String      @default("") @db.VarChar(100)
+  Image       Image[]
+  OrderItem   OrderItem[]
+  Categories  Categories  @relation(fields: [CategoryId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Categories_CategoryId")
+  Colors      Colors      @relation(fields: [ColorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Colors_ColorId")
+  Sizes       Sizes       @relation(fields: [SizeId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Sizes_SizeId")
+  Stores      Stores      @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Stores_StoreId")
 
   @@index([StoreId], map: "IX_Products_StoreId")
-  @@index([CategoriesId], map: "IX_Products_CategoriesId")
   @@index([SizeId], map: "IX_Products_SizeId")
   @@index([ColorId], map: "IX_Products_ColorId")
+  @@index([CategoryId], map: "IX_Products_CategoryId")
 }
 
 model Stores {
@@ -40,6 +44,7 @@ model Stores {
   Billboards  Billboards[]
   Categories  Categories[]
   Colors      Colors[]
+  Order       Order[]
   Products    Products[]
   Sizes       Sizes[]
 }
@@ -171,6 +176,42 @@ model Colors {
   Products  Products[]
 
   @@index([StoreId], map: "IX_Colors_StoreId")
+}
+
+model Image {
+  Id        String   @id(map: "PK_Image") @db.Uuid
+  ProductId String   @db.Uuid
+  Url       String   @db.VarChar(255)
+  CreatedAt DateTime @db.Timestamptz(6)
+  UpdatedAt DateTime @db.Timestamptz(6)
+  Products  Products @relation(fields: [ProductId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Image_Products_ProductId")
+
+  @@index([ProductId], map: "IX_Image_ProductId")
+}
+
+model Order {
+  Id        String      @id(map: "PK_Order") @db.Uuid
+  StoreId   String      @db.Uuid
+  IsPaid    Boolean
+  Phone     String      @db.VarChar(255)
+  Address   String
+  CreatedAt DateTime    @db.Timestamptz(6)
+  UpdatedAt DateTime    @db.Timestamptz(6)
+  Stores    Stores      @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Order_Stores_StoreId")
+  OrderItem OrderItem[]
+
+  @@index([StoreId], map: "IX_Order_StoreId")
+}
+
+model OrderItem {
+  Id        String   @id(map: "PK_OrderItem") @db.Uuid
+  OrderId   String   @db.Uuid
+  ProductId String   @db.Uuid
+  Order     Order    @relation(fields: [OrderId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_OrderItem_Order_OrderId")
+  Products  Products @relation(fields: [ProductId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_OrderItem_Products_ProductId")
+
+  @@index([OrderId], map: "IX_OrderItem_OrderId")
+  @@index([ProductId], map: "IX_OrderItem_ProductId")
 }
 
 enum UserRole {
