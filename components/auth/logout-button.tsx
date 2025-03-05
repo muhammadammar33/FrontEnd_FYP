@@ -11,6 +11,7 @@ export const LogoutButton = ({
 }: LogoutButtonProps) => {
     const onClick = () => {
         logout();
+        window.location.reload();
     };
 
     return (

@@ -15,7 +15,7 @@ model Products {
   StoreId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   SizeId      String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   ColorId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
-  Id          String      @id(map: "PK_Products") @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  Id          String      @id(map: "PK_Products") @db.Uuid
   CategoryId  String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   CreatedAt   DateTime    @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
   IsArchived  Boolean     @default(false)

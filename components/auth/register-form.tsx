@@ -142,6 +142,7 @@ export const RegisterForm = () => {
                                             <option value=" ">Select Role</option>
                                             <option value="SELLER">Seller</option>
                                             <option value="BUYER">Buyer</option>
+                                            <option value="ADMIN">Admin</option>
                                         </select>
                                     </FormControl>
                                     <FormMessage />

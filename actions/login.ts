@@ -4,8 +4,8 @@ import * as z from "zod";
 import { LoginSchema } from "@/schemas";
 import { error } from "console";
 import { signIn } from "@/auth";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { SellerRoute } from "@/routes";
+// import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { SellerRoute, AdminRoute } from "@/routes";
 import { AuthError } from "next-auth";
 import { getUserbyEmail } from "@/data/user";
 import { 
@@ -32,7 +32,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     const existingUser = await getUserbyEmail(email);
 
     if (!existingUser || !existingUser.email || !existingUser.password) {
-        return {error: "Email does not exist"};
+        return {error: "User with this email does not exist"};
     }
     const verificationToken = await generateVerificationToken(email);
     await sendVerificationEmail(verificationToken.email, verificationToken.token);
@@ -98,7 +98,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
             await signIn("credentials", {
                 email,
                 password,
-                redirectTo: DEFAULT_LOGIN_REDIRECT
+                redirectTo: "/"
             });
         } catch (error) {
             if (error instanceof AuthError) {
@@ -117,6 +117,24 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
                 email,
                 password,
                 redirectTo: SellerRoute
+            });
+        } catch (error) {
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case "CredentialsSignin":
+                        return {error: "Invalid credentials"};
+                    default:
+                        return {error: "An unknown error occurred"};
+                }
+            }
+            throw error;
+        }
+    } else if (existingUser.role === "ADMIN") {
+        try {
+            await signIn("credentials", {
+                email,
+                password,
+                redirectTo: AdminRoute
             });
         } catch (error) {
             if (error instanceof AuthError) {
