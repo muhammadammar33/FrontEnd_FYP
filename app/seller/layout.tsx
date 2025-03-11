@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body>
+            <body className='bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-900 to-blue-900'>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
                 {/* <Navbar /> */}
                     {children}

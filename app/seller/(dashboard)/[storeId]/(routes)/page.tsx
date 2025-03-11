@@ -1,8 +1,8 @@
-import { getGraphRevenue } from "@/actions/get-graph-revenue";
-import { getSalesCount } from "@/actions/get-sales-count";
-import { getStockCount } from "@/actions/get-stock-count";
-import { getTotalRevenue } from "@/actions/get-total-revenue";
-import { getProductsCount } from "@/actions/get-total-products";
+import { getStoreGraphRevenue } from "@/actions/get-graph-revenue";
+import { getStoreSalesCount } from "@/actions/get-sales-count";
+import { getStoreStockCount } from "@/actions/get-stock-count";
+import { getStoreRevenue } from "@/actions/get-total-revenue";
+import { getStoreProductsCount } from "@/actions/get-total-products";
 import { Overview } from "@/components/ui/overview";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
@@ -20,11 +20,11 @@ const DashboardPage = async ({ params }: { params: Promise<{ storeId: string }> 
     //     where: { Id: storeId }
     // });
 
-    const totalRevenue = await getTotalRevenue(storeId);
-    const salesCount = await getSalesCount(storeId);
-    const stockCount = await getStockCount(storeId);
-    const productCount = await getProductsCount(storeId);
-    const graphRevenue = await getGraphRevenue(storeId);
+    const totalRevenue = await getStoreRevenue(storeId);
+    const salesCount = await getStoreSalesCount(storeId);
+    const stockCount = await getStoreStockCount(storeId);
+    const productCount = await getStoreProductsCount(storeId);
+    const graphRevenue = await getStoreGraphRevenue(storeId);
 
     return (
         <div className="flex-col">

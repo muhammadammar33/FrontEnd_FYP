@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { signOut } from "next-auth/react";
 
 export const UserButton = () => {
     const user = useCurrentUser();
@@ -37,12 +38,13 @@ export const UserButton = () => {
                         {user.name}
                     </DropdownMenuLabel>
                 )}
-                <LogoutButton>
-                    <DropdownMenuItem>
-                        <ExitIcon className="h-4 w-4 mr-2" />
-                        Logout
-                    </DropdownMenuItem>
-                </LogoutButton>
+            <span
+                onClick={() => signOut({ callbackUrl: "/auth/Login" })}
+                className="flex items-center cursor-pointer"
+                >
+                <ExitIcon className="h-4 w-4 mr-2" />
+                Logout
+            </span>
             </DropdownMenuContent>
         </DropdownMenu>
     );

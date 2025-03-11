@@ -30,8 +30,10 @@ export default async function Dashboard({children, params}: DashboardType) {
 
     return (
         <>
-            <Navbar />
-            {children}
+            <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-900 to-blue-900">
+                <Navbar />
+                {children}
+            </div>
         </>
     )
 }

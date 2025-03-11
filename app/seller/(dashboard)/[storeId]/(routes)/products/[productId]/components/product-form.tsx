@@ -31,7 +31,7 @@ interface ProductFromProps {
 const formSchema = z.object({
     Name: z.string().min(1),
     Images: z.object({ url: z.string() }).array(),
-    Description: z.string().min(10),
+    Description: z.string().optional(),
     Stock: z.coerce.number().min(0),
     Price: z.coerce.number().min(1),
     CategoryId: z.string().min(1),
@@ -56,6 +56,8 @@ export const ProductForm: React.FC<ProductFromProps> = ({
 
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [generatingImage, setGeneratingImage] = useState(false);
+    const [generatingDescription, setGeneratingDescription] = useState(false);
 
     const title = initialData ? 'Edit Product' : 'Create Product'
     const description = initialData ? 'Edit a product' : 'Add a new Product'
@@ -116,6 +118,61 @@ export const ProductForm: React.FC<ProductFromProps> = ({
         }
     }
 
+    const generateDescription = async () => {
+        const name = form.getValues('Name'); // Get the product name from the form
+        if (!name) {
+            toast.error('Please enter a product name to generate a description.');
+            return;
+        }
+
+        setGeneratingDescription(true); // Set loading state for description generation
+        try {
+            const response = await axios.post(
+                `/api/${params.storeId}/products/description/generate`, // API route for description generation
+                { Name: name }, // Pass the product name to the API
+                { headers: { 'Content-Type': 'application/json' } }
+            );
+
+            // Update the Description field in the form with the generated description
+            form.setValue('Description', response.data.generatedDescription);
+            toast.success('Description generated successfully.');
+        } catch (err) {
+            toast.error('Failed to generate description.');
+        } finally {
+            setGeneratingDescription(false); // Reset loading state
+        }
+    };
+
+    const generateImage = async () => {
+        const description = form.getValues('Description');
+        if (!description) {
+            toast.error('Please enter a description to generate an image.');
+            return;
+        }
+
+        setGeneratingImage(true);
+        try {
+            // Call the updated API route
+            const response = await axios.post(
+                `/api/${params.storeId}/products/image/generate`,
+                { Description: description },
+                { headers: { 'Content-Type': 'application/json' } }
+            );
+
+            // Get the Cloudinary URL from the response
+            const imageUrl = response.data.imageUrl;
+
+            // Update the Images field in the form
+            form.setValue('Images', [...form.getValues('Images'), { url: imageUrl }]);
+            toast.success('Image generated and uploaded successfully.');
+        } catch (err) {
+            console.error('Error generating or uploading image:', err);
+            toast.error('Failed to generate image.');
+        } finally {
+            setGeneratingImage(false);
+        }
+    };
+
     return (
         <>
             <AlertModal
@@ -135,6 +192,76 @@ export const ProductForm: React.FC<ProductFromProps> = ({
             <Separator />
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8">
+                    {/* <FormField
+                        control={form.control} 
+                        name="Name"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                    <Input disabled={loading} placeholder='Product Name' {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    /> */}
+                    {/* <FormField
+                        control={form.control} 
+                        name="Description"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                    <Input disabled={loading} placeholder='Product Description' {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    /> */}
+                    <FormField
+                        control={form.control}
+                        name="Name"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                    <div className="flex gap-2">
+                                        <Input disabled={loading} className='bg-white' placeholder="Product Name" {...field} />
+                                        <Button
+                                            type="button"
+                                            onClick={generateDescription}
+                                            disabled={generatingDescription || loading}
+                                        >
+                                            {generatingDescription ? 'Generating...' : 'Generate Description'}
+                                        </Button>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="Description"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                    <div className="flex gap-2">
+                                        <Input disabled={loading} className='bg-white' placeholder="Product Description" {...field} />
+                                        <Button
+                                            type="button"
+                                            onClick={generateImage}
+                                            disabled={generatingImage || loading}
+                                        >
+                                            {generatingImage ? 'Generating...' : 'Generate Image'}
+                                        </Button>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control} 
                         name="Images"
@@ -153,33 +280,28 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             </FormItem>
                         )}
                     />
+                    {/* <FormField
+                        control={form.control}
+                        name="Images"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Generated Image</FormLabel>
+                                <FormControl>
+                                    <div className="flex flex-col gap-4">
+                                        {field.value.length > 0 && (
+                                            <img
+                                                src={field.value[0].url}
+                                                alt="Generated Product"
+                                                className="w-64 h-64 object-cover rounded-lg"
+                                            />
+                                        )}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    /> */}
                     <div className='grid grid-cols-3 gap-8'>
-                        <FormField
-                            control={form.control} 
-                            name="Name"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Name</FormLabel>
-                                    <FormControl>
-                                        <Input disabled={loading} placeholder='Product Name' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control} 
-                            name="Description"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                        <Input disabled={loading} placeholder='Product Description' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                         <FormField
                             control={form.control} 
                             name="Stock"
@@ -187,7 +309,7 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                                 <FormItem>
                                     <FormLabel>Stock</FormLabel>
                                     <FormControl>
-                                        <Input type="number" disabled={loading} placeholder='Product Stock' {...field} />
+                                        <Input type="number" disabled={loading} className='bg-white' placeholder='Product Stock' {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -200,7 +322,7 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                                 <FormItem>
                                     <FormLabel>Price</FormLabel>
                                     <FormControl>
-                                        <Input type="number" disabled={loading} placeholder='Product Price' {...field} />
+                                        <Input type="number" disabled={loading} className='bg-white' placeholder='Product Price' {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

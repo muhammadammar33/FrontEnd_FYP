@@ -33,6 +33,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
         cart.addItem(data)
     }
 
+    const truncateCharacters = (text: string, maxChars: number): string => {
+        // If the text is shorter than the limit, return the full text
+        if (text.length <= maxChars) {
+            return text;
+        }
+    
+        // Otherwise, truncate the text and add an ellipsis
+        return text.slice(0, maxChars) + '...';
+    };
+
+    // Function to truncate words
+    const truncateWords = (text: string, maxWords: number): string => {
+        const words = text.split(' ');
+        if (words.length <= maxWords) {
+            return text;
+        }
+        return words.slice(0, maxWords).join(' ') + '...';
+    };
+
     return (
         <>
         <Link
@@ -52,11 +71,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
             <div className="absolute w-full px-6 transition opacity-0 group-hover:opacity-100 bottom-5">
                 <div className="flex justify-center gap-x-6">
                 <IconButton
+                    // onClick={(e) => {
+                    //     e.stopPropagation();
+                    //     onPreview;
+                    // }}
                     onClick={onPreview}
                     icon={<Expand size={20} className="text-gray-600 z-50" />}
                 />
                 <IconButton
-                    onClick={onAddToCart}
+                onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCart;
+                    }}
                     icon={<ShoppingCart size={20} className="text-gray-600 z-50" />}
                 />
                 </div>
@@ -69,7 +95,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
                 <p className="text-lg font-semibold">{data.name}</p>
                 <p className="text-sm text-gray-500">{data.category?.name}</p>
             </div>
-            <p className="text-sm text-gray-500">{data.description}</p>
+            <p className="text-sm text-gray-500 text-justify">
+                {truncateCharacters(data.description, 100)}
+            </p>
             </div>
 
             {/* Price */}

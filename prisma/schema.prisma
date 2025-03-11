@@ -8,14 +8,14 @@ datasource db {
 }
 
 model Products {
-  Description String      @db.VarChar(500)
+  Description String      @db.VarChar(2500)
   Price       Decimal     @db.Decimal
   Stock       Int
   UpdatedAt   DateTime    @db.Timestamptz(6)
   StoreId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   SizeId      String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   ColorId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
-  Id          String      @id(map: "PK_Products") @db.Uuid
+  Id          String      @id(map: "PK_Products") @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   CategoryId  String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   CreatedAt   DateTime    @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
   IsArchived  Boolean     @default(false)
@@ -41,6 +41,8 @@ model Stores {
   UserId      String
   CreatedAt   DateTime     @db.Timestamptz(6)
   UpdatedAt   DateTime     @db.Timestamptz(6)
+  Reason      String       @default("") @db.VarChar(500)
+  Status      StoreStatus  @default(PENDING)
   Billboards  Billboards[]
   Categories  Categories[]
   Colors      Colors[]
@@ -218,4 +220,10 @@ enum UserRole {
   ADMIN
   SELLER
   BUYER
+}
+
+enum StoreStatus {
+  PENDING
+  APPROVED
+  ARCHIVED
 }

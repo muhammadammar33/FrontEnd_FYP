@@ -2,6 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from '@/lib/db';
 import { SettingsForm } from "./components/settings-form";
+import { Progress } from "@/components/ui/progress"
 
 const SettingsPage = async ({ params }:{ params: Promise<{ storeId: string }> }) => {
     const { storeId } = await params;

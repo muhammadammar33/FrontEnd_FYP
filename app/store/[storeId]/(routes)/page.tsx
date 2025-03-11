@@ -18,6 +18,8 @@ interface Query {
 }
 
 const HomePage = async ({ params }: StorePageProps) => {
+
+    
     const { storeId } = params;
 
     const dbBillboards = await db.billboards.findMany({
@@ -126,6 +128,7 @@ const HomePage = async ({ params }: StorePageProps) => {
     return (
         <Container>
             <div className="pb-10 space-y-10">
+                
                 {billboards.map(billboard => (
                     <Billboard key={billboard.id} data={billboard} />
                 ))}

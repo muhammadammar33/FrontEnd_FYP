@@ -40,3 +40,13 @@ export interface Color {
     name: string;
     value: string;
 }
+
+export interface Stores {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    // billboards: Billboard;
+    // products: Product[];
+    // categories: Category[];
+}

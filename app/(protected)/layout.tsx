@@ -1,16 +1,16 @@
-import { Navbar } from "./_components/navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "./_components/app-sidebar"
 
-interface ProtectedLayoutProps {
-    children: React.ReactNode;
-};
-
-const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-    return ( 
-        <div className="h-full w-full flex flex-col gap-y-10 items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 to-blue-800">
-            <Navbar />
-            {children}
+export default function Layout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 to-blue-900">
+        <SidebarProvider>
+            <AppSidebar />
+            <main>
+                <SidebarTrigger />
+                {children}
+            </main>
+        </SidebarProvider>
         </div>
-    );
+    )
 }
-
-export default ProtectedLayout;
