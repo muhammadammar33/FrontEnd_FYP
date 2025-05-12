@@ -1,91 +1,100 @@
-import { getStoreGraphRevenue } from "@/actions/get-graph-revenue";
-import { getStoreSalesCount } from "@/actions/get-sales-count";
-import { getStoreStockCount } from "@/actions/get-stock-count";
-import { getStoreRevenue } from "@/actions/get-total-revenue";
-import { getStoreProductsCount } from "@/actions/get-total-products";
-import { Overview } from "@/components/ui/overview";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Heading } from "@/components/ui/heading";
-import { Separator } from "@/components/ui/separator";
-import {db} from "@/lib/db"
-import { formatter } from "@/lib/utils";
-import { CreditCard, DollarSign, Package, View } from "lucide-react";
-import { Button } from "@/components/ui/button"
-import Link from "next/link";
-import PreviewStore from "@/app/seller/_components/preview-store";
+import Navbar from "../../../_components/navbar";
+import SellerDashboard from "../../../_components/SellerDashboard";
+import { format } from 'date-fns'
+import { db } from '@/lib/db'
+import { formatter } from '@/lib/utils'
 
-const DashboardPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
-    const { storeId } = await params;
-    // const store = await db.stores.findFirst({
-    //     where: { Id: storeId }
-    // });
-
-    const totalRevenue = await getStoreRevenue(storeId);
-    const salesCount = await getStoreSalesCount(storeId);
-    const stockCount = await getStoreStockCount(storeId);
-    const productCount = await getStoreProductsCount(storeId);
-    const graphRevenue = await getStoreGraphRevenue(storeId);
-
-    return (
-        <div className="flex-col">
-        <div className="flex-1 p-8 pt-6 space-y-4">
-            <div className="flex items-center justify-between">
-                <Heading title="Dashboard" description="Overview of your store" />
-                <PreviewStore storeId={(await params).storeId} />
-            </div>
-            <Separator />
-            <div className="grid grid-cols-3 gap-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium">
-                    Total Revenue
-                </CardTitle>
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">
-                    {formatter.format(totalRevenue)}
-                </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium">
-                    Sales
-                </CardTitle>
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">
-                    +{salesCount}
-                </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium">
-                    Products in Stock
-                </CardTitle>
-                <Package className="w-4 h-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">
-                    {productCount} Products of {stockCount} types
-                </div>
-                </CardContent>
-            </Card>
-            </div>
-            <Card className="col-span-4">
-            <CardHeader>
-                <CardTitle>Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-                <Overview data={graphRevenue} />
-            </CardContent>
-            </Card>
-        </div>
-        </div>
-    )
+type ProductColumn = {
+    id: string
+    name: string
+    price: string
+    size: string
+    category: string
+    color: string
+    isFeatured: boolean
+    isArchived: boolean
+    createdAt: string
+    stock: number
+    imageUrl?: string
 }
 
-export default DashboardPage
+export type OrderColumn = {
+    id: string
+    phone: string
+    address: string
+    isPaid: boolean
+    totalPrice: string
+    products: string
+    createdAt: string
+}
+
+const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
+
+    const { storeId } = await params;
+    const products = await db.products.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        include: {
+            Categories: true,
+            Sizes: true,
+            Colors: true,
+            Image: true
+        },
+        orderBy: {
+            CreatedAt: 'desc'
+        }
+    })
+
+    const formattedProducts: ProductColumn[] = products.map(item => ({
+        id: item.Id,
+        name: item.Name,
+        isFeatured: item.IsFeatured,
+        isArchived: item.IsArchived,
+        price: formatter.format(Number(item.Price)),
+        stock: item.Stock,
+        category: item.Categories.Name,
+        size: item.Sizes.Name,
+        color: item.Colors.Value,
+        createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
+        imageUrl: item.Image && item.Image.length > 0 
+            ? item.Image[0].Url 
+            : ""
+    }));
+
+    const orders = await db.order.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        include: {
+            OrderItem: {
+                include: {
+                    Products: true
+                }
+            }
+        },
+        orderBy: {
+            CreatedAt: 'desc'
+        }
+    })
+
+    const formattedOrders: OrderColumn[] = orders.map(item => ({
+        id: item.Id,
+        phone: item.Phone,
+        address: item.Address,
+        products: item.OrderItem.map((orderItem) => orderItem.Products.Name).join(', '),
+        totalPrice: formatter.format(item.OrderItem.reduce((total, item) => total + Number(item.Products.Price), 0)),
+        isPaid: item.IsPaid,
+        createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
+    }));
+
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <SellerDashboard storeId={(await params).storeId} products={formattedProducts} orders={formattedOrders}/>
+        </div>
+    );
+};
+
+export default SellerDashboardPage;
+
