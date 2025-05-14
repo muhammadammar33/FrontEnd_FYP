@@ -45,7 +45,7 @@ export async function GET(
 
     return NextResponse.json(shop);
   } catch (err) {
-    console.log('[SHOP_GET]', err);
+    // console.log('[SHOP_GET]', err);
     return new NextResponse('Internal error', { status: 500 });
   }
 }
