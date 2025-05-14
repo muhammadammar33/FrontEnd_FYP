@@ -84,6 +84,14 @@ model User {
   messages              Message[]
 }
 
+model Conversation {
+  id                    String                 @id @default(cuid())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  participants          ConversationParticipant[]
+  messages              Message[]
+}
+
 // Join table for the many-to-many relationship between User and Conversation
 model ConversationParticipant {
   user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
