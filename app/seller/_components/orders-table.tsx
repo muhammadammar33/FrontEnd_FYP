@@ -20,6 +20,7 @@ import { useRouter, useParams } from "next/navigation"
 import { AlertModal } from "@/components/modals/alert-modal"
 import axios from "axios"
 import { toast } from "react-hot-toast"
+import { useSession } from "next-auth/react"
 
 export type OrderColumn = {
     id: string
@@ -36,73 +37,8 @@ interface OrdersTableProps {
     orders: OrderColumn[];
 }
 
-// const demoOrders = [
-//   {
-//     id: "ORD-7652",
-//     customer: "John Smith",
-//     email: "john.smith@example.com",
-//     date: "2023-04-12",
-//     total: 129.95,
-//     status: "Delivered",
-//     items: 3,
-//   },
-//   {
-//     id: "ORD-7653",
-//     customer: "Sarah Johnson",
-//     email: "sarah.j@example.com",
-//     date: "2023-04-12",
-//     total: 49.99,
-//     status: "Processing",
-//     items: 1,
-//   },
-//   {
-//     id: "ORD-7654",
-//     customer: "Michael Brown",
-//     email: "michael.b@example.com",
-//     date: "2023-04-11",
-//     total: 89.97,
-//     status: "Shipped",
-//     items: 2,
-//   },
-//   {
-//     id: "ORD-7655",
-//     customer: "Emily Davis",
-//     email: "emily.d@example.com",
-//     date: "2023-04-11",
-//     total: 149.98,
-//     status: "Processing",
-//     items: 4,
-//   },
-//   {
-//     id: "ORD-7656",
-//     customer: "Robert Wilson",
-//     email: "robert.w@example.com",
-//     date: "2023-04-10",
-//     total: 29.99,
-//     status: "Delivered",
-//     items: 1,
-//   },
-//   {
-//     id: "ORD-7657",
-//     customer: "Jennifer Taylor",
-//     email: "jennifer.t@example.com",
-//     date: "2023-04-10",
-//     total: 199.95,
-//     status: "Cancelled",
-//     items: 2,
-//   },
-//   {
-//     id: "ORD-7658",
-//     customer: "David Miller",
-//     email: "david.m@example.com",
-//     date: "2023-04-09",
-//     total: 79.98,
-//     status: "Delivered",
-//     items: 2,
-//   },
-// ]
-
 export default function OrdersTable({ orders }: OrdersTableProps) {
+    const {data:session} = useSession();
     const [searchTerm, setSearchTerm] = useState("")
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -125,6 +61,41 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                 return "destructive";
             default:
                 return "default";
+        }
+    }
+
+    const handleChatWithBuyer = async (userId: string) => {
+        try {
+            if (!session?.user.id) {
+                toast.error("You must be logged in to chat");
+                return;
+            }
+
+            const currentUserId = session.user.id as string;
+            
+            if (userId === currentUserId) {
+                toast.error("You cannot create a conversation with yourself");
+                return;
+            }
+
+            const userIds = [userId, currentUserId];
+            console.log("User IDs:", userIds);
+            
+            const response = await axios.post(`/api/conversations`, { userIds });
+            console.log("Response:", response);
+            
+            if (response.data.success) {
+                toast.success(response.data.message);
+                // Optionally navigate to the conversation
+                // router.push(`/conversations/${response.data.data.id}`);
+            }
+        } catch (error) {
+            console.error("Error creating conversation:", error);
+            if (axios.isAxiosError(error) && error.response) {
+                toast.error(`Error: ${error.response.data.message || "Failed to create conversation"}`);
+            } else {
+                toast.error("Error creating conversation");
+            }
         }
     }
 
@@ -269,7 +240,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                 </Badge>
                                 </TableCell>
                                 <TableCell>
-                                <Button variant="link" size="sm" onClick={() => {}}>
+                                <Button variant="link" size="sm" onClick={() => {handleChatWithBuyer(order.userId)}}>
                                     Chat with Buyer
                                 </Button>
                                 </TableCell>
