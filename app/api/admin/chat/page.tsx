@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { FiSend, FiSearch, FiMoreVertical } from 'react-icons/fi';
+import { FiSend } from 'react-icons/fi';
 import { BiArrowBack } from 'react-icons/bi';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
@@ -54,8 +54,6 @@ export default function Chat() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<User[]>([]);
-    const [showSearch, setShowSearch] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typing, setTyping] = useState<{ userId: string, conversationId: string } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -197,11 +195,6 @@ export default function Chat() {
             setConversations(prev => [conversation, ...prev]);
         });
 
-        // Handle search results
-        socket.on('users:search-results', (users: User[]) => {
-            setSearchResults(users);
-        });
-
         return () => {
             socket.off('message:new');
             socket.off('users:online');
@@ -210,7 +203,6 @@ export default function Chat() {
             socket.off('typing:start');
             socket.off('typing:stop');
             socket.off('conversation:new');
-            socket.off('users:search-results');
         };
     }, [socket, selectedConversation]);
 
@@ -280,28 +272,22 @@ export default function Chat() {
         return () => clearTimeout(timeout);
     };
 
-    // Handle searching users
-    const handleSearch = () => {
-        if (!socket || !searchTerm.trim()) return;
-
-        socket.emit('users:search', searchTerm);
-    };
-
-    // Start a new conversation with a user
-    const startConversation = (userId: string) => {
-        if (!socket) return;
-
-        socket.emit('conversation:create', userId);
-        setShowSearch(false);
-        setSearchTerm('');
-        setSearchResults([]);
-    };
-
     // Get other participant in a conversation
     const getOtherParticipant = (conversation: Conversation) => {
         if (!currentUser) return null;
         return conversation.participants.find(p => p.userId !== currentUser.id)?.user;
     };
+
+    // Filter conversations based on searchTerm
+    const filteredConversations = conversations.filter(conversation => {
+        const otherUser = getOtherParticipant(conversation);
+        if (!otherUser) return false;
+        const search = searchTerm.toLowerCase();
+        return (
+            otherUser.name?.toLowerCase().includes(search) ||
+            otherUser.email.toLowerCase().includes(search)
+        );
+    });
 
     // Format timestamp
     const formatTime = (timestamp: string) => {
@@ -323,82 +309,33 @@ export default function Chat() {
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-emerald-600 text-white">
                     <h1 className="font-bold text-xl">Chats</h1>
-                    <div className="flex space-x-4">
-                        <button
-                            onClick={() => setShowSearch(!showSearch)}
-                            className="p-2 rounded-full hover:bg-emerald-700"
-                        >
-                            <FiSearch size={20} />
-                        </button>
-                       
-                    </div>
                 </div>
 
                 {/* Search Bar */}
-                {showSearch && (
-                    <div className="p-4 border-b">
-                        <div className="flex items-center">
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search users..."
-                                className="w-full px-4 py-2 border rounded-l-lg focus:outline-none"
-                            />
-                            <button
-                                onClick={handleSearch}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-r-lg"
-                            >
-                                <FiSearch />
-                            </button>
-                        </div>
-
-                        {/* Search Results */}
-                        {searchResults.length > 0 && (
-                            <div className="mt-2 border rounded-lg overflow-hidden bg-white shadow-md">
-                                {searchResults.map(user => (
-                                    <div
-                                        key={user.id}
-                                        className="p-3 border-b flex items-center hover:bg-gray-50 cursor-pointer"
-                                        onClick={() => startConversation(user.id)}
-                                    >
-                                        <div className="h-10 w-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
-                                            {user.image ? (
-                                                <Image
-                                                    src={user.image}
-                                                    alt={user.name || 'User'}
-                                                    width={40}
-                                                    height={40}
-                                                />
-                                            ) : (
-                                                <div className="h-full w-full flex items-center justify-center text-gray-500">
-                                                    {user.name?.[0] || user.email[0].toUpperCase()}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold">{user.name || 'No name'}</p>
-                                            <p className="text-sm text-gray-500">{user.email}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                <div className="p-4 border-b">
+                    <div className="flex items-center">
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search users..."
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+                        />
                     </div>
-                )}
+                </div>
 
                 {/* Conversations List */}
                 {loading && conversations.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">Loading conversations...</div>
                 ) : error ? (
                     <div className="p-4 text-center text-red-500">{error}</div>
-                ) : conversations.length === 0 ? (
+                ) : filteredConversations.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">
-                        No conversations yet. Search for a user to start chatting!
+                        No conversations found. Try a different search!
                     </div>
                 ) : (
                     <div className="overflow-y-auto h-[calc(100vh-138px)]">
-                        {conversations
+                        {filteredConversations
                             .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
                             .map(conversation => {
                                 const otherUser = getOtherParticipant(conversation);
@@ -444,7 +381,6 @@ export default function Chat() {
                                                     </span>
                                                 )}
                                             </div>
-                                           
                                         </div>
                                     </div>
                                 );
@@ -495,8 +431,6 @@ export default function Chat() {
                                     </p>
                                 </div>
                             </div>
-
-                            
                         </div>
 
                         {/* Messages Area */}
@@ -584,7 +518,6 @@ export default function Chat() {
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
                         <div className="w-1/2 max-w-md">
-                           
                             <h2 className="text-xl font-semibold text-center">Select a conversation</h2>
                             <p className="text-center">Choose a conversation from the sidebar or start a new one by searching for users.</p>
                         </div>
