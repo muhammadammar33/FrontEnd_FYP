@@ -25,9 +25,6 @@ const ProductPage = async ({ params }: { params: Params }) => {
         where: {
             Id: product?.CategoryId,
         },
-        include: {
-            Billboards: true,
-        }
     });
     const Size = await db.sizes.findFirst({
         where: {
@@ -46,14 +43,6 @@ const ProductPage = async ({ params }: { params: Params }) => {
         category: Category ? {
             id: Category.Id,
             name: Category.Name,
-            billboard: {
-                id: Category.Billboards.Id,
-                label: Category.Billboards.Label,
-                imageUrl: Category.Billboards.ImageUrl,
-                updatedAt: Category.Billboards.UpdatedAt,
-                storeId: Category.Billboards.StoreId,
-                createdAt: Category.Billboards.CreatedAt,
-            },
             updatedAt: Category.UpdatedAt,
             storeId: Category.StoreId,
             createdAt: Category.CreatedAt,
@@ -108,9 +97,6 @@ const ProductPage = async ({ params }: { params: Params }) => {
             where: {
                 Id: product.CategoryId,
             },
-            include: {
-                Billboards: true,
-            }
         });
         const Size = await db.sizes.findFirst({
             where: {
@@ -128,14 +114,6 @@ const ProductPage = async ({ params }: { params: Params }) => {
             category: Category ? {
                 id: Category.Id,
                 name: Category.Name,
-                billboard: {
-                    id: Category.Billboards.Id,
-                    label: Category.Billboards.Label,
-                    imageUrl: Category.Billboards.ImageUrl,
-                    updatedAt: Category.Billboards.UpdatedAt,
-                    storeId: Category.Billboards.StoreId,
-                    createdAt: Category.Billboards.CreatedAt,
-                },
                 updatedAt: Category.UpdatedAt,
                 storeId: Category.StoreId,
                 createdAt: Category.CreatedAt,

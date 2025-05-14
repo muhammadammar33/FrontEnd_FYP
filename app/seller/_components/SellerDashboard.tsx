@@ -33,6 +33,7 @@ import ColorsTable from "../_components/colors-table"
 import BillboardsTable from "../_components/billboards-table"
 import AnalyticsView from "../_components/analytics-view"
 import SettingsView from "../_components/settings-view"
+import Chat from "../chat/page"
 import { ExitIcon } from "@radix-ui/react-icons"
 import { signOut } from "next-auth/react";
 import { useSearchParams } from "next/navigation"
@@ -54,6 +55,7 @@ type ProductColumn = {
 
 type OrderColumn = {
     id: string
+    userId: string
     phone: string
     address: string
     isPaid: boolean
@@ -278,6 +280,7 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                 </div>
                 )}
                 {activeTab === "settings" && <SettingsView storeId={storeId} />}
+                {activeTab === "chat" && <Chat/>}
             </main>
             </div>
         </div>

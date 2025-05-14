@@ -23,6 +23,7 @@ import { toast } from "react-hot-toast"
 
 export type OrderColumn = {
     id: string
+    userId: string
     phone: string
     address: string
     isPaid: boolean
@@ -116,15 +117,11 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
         order.phone.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case "Delivered":
+    const getStatusVariant = (isPaid: boolean) => {
+        switch (isPaid) {
+            case true:
                 return "default";
-            case "Processing":
-                return "outline";
-            case "Shipped":
-                return "secondary";
-            case "Cancelled":
+            case false:
                 return "destructive";
             default:
                 return "default";
@@ -206,14 +203,13 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                 <TableHeader>
                 <TableRow>
                     <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
+                    <TableHead>Customer ID</TableHead>
                     <TableHead>
                     <div className="flex items-center">
                         Date
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </div>
                     </TableHead>
-                    <TableHead>Items</TableHead>
                     <TableHead>
                     <div className="flex items-center">
                         Total
@@ -221,6 +217,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                     </div>
                     </TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Chat</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -260,18 +257,21 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                             />
                             <TableRow key={order.id}>
                                 <TableCell className="font-medium">{order.id}</TableCell>
+                                <TableCell className="font-medium">{order.userId}</TableCell>
                                 <TableCell>
                                 <div>{order.phone}</div>
                                 <div className="text-xs text-muted-foreground">{order.address}</div>
                                 </TableCell>
-                                <TableCell>{order.isPaid}</TableCell>
-                                <TableCell>${order.totalPrice}</TableCell>
+                                <TableCell>{order.totalPrice}</TableCell>
                                 <TableCell>
-                                {/* <Badge
-                                    variant={getStatusVariant(order.status) as any}
-                                >
-                                    {order.status}
-                                </Badge> */}
+                                <Badge variant={getStatusVariant(order.isPaid) as any}>
+                                    {order.isPaid ? "Paid" : "UnPaid"}
+                                </Badge>
+                                </TableCell>
+                                <TableCell>
+                                <Button variant="link" size="sm" onClick={() => {}}>
+                                    Chat with Buyer
+                                </Button>
                                 </TableCell>
                                 <TableCell className="text-right">
                                 <DropdownMenu>

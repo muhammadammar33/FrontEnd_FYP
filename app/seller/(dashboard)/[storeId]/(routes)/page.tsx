@@ -20,6 +20,7 @@ type ProductColumn = {
 
 type OrderColumn = {
     id: string
+    userId: string
     phone: string
     address: string
     isPaid: boolean
@@ -100,6 +101,7 @@ const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: stri
 
     const formattedOrders: OrderColumn[] = orders.map(item => ({
         id: item.Id,
+        userId: item.userId,
         phone: item.Phone,
         address: item.Address,
         products: item.OrderItem.map((orderItem) => orderItem.Products.Name).join(', '),

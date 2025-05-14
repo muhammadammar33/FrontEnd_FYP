@@ -79,9 +79,10 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   accounts              Account[]
   twoFactorConfirmation TwoFactorConfirmation?
-  storeCategories       StoreCategories[]      // Added relation to StoreCategories
+  storeCategories       StoreCategories[]      
   participants          ConversationParticipant[]
   messages              Message[]
+  orders                Order[]                // Added relation to Order
 }
 
 model Conversation {
@@ -234,15 +235,18 @@ model Image {
 model Order {
   Id        String      @id(map: "PK_Order") @db.Uuid
   StoreId   String      @db.Uuid
+  userId    String      // Added userId field
   IsPaid    Boolean
   Phone     String      @db.VarChar(255)
   Address   String
   CreatedAt DateTime    @db.Timestamptz(6)
   UpdatedAt DateTime    @db.Timestamptz(6)
   Stores    Stores      @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Order_Stores_StoreId")
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Added relation to User
   OrderItem OrderItem[]
 
   @@index([StoreId], map: "IX_Order_StoreId")
+  @@index([userId], map: "IX_Order_userId")
 }
 
 model OrderItem {
