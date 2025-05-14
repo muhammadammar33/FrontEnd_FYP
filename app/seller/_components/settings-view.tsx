@@ -16,6 +16,7 @@ import axios from "axios";
 import Image from "next/image";
 import { CldUploadButton } from "next-cloudinary";
 import { ImageIcon, Trash } from "lucide-react";
+import ImageUpload from "@/components/ui/image-upload"
 
 interface Store {
     Id: string;
@@ -50,6 +51,7 @@ export default function SettingsView({ storeId }: SettingsProps) {
     const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [imageUrl, setImageUrl] = useState<string>("");
+    const [vacationMode, setVacationMode] = useState<boolean>(false);
     const user = useCurrentUser();
     const nameRef = useRef<HTMLInputElement>(null);
     const storeNameRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,8 @@ export default function SettingsView({ storeId }: SettingsProps) {
         if (store) {
             setSelectedCategory(store.StoreCategoryId || "");
             setImageUrl(store.ImageUrl || "");
+            // Store is in vacation mode when status is ARCHIVED
+            setVacationMode(store.Status === "ARCHIVED");
         }
     }, [store]);
 
@@ -177,6 +181,36 @@ export default function SettingsView({ storeId }: SettingsProps) {
     const handleRemoveImage = () => {
         setImageUrl("");
     };
+
+    const handleVacationModeToggle = async (checked: boolean) => {
+        if (!store) return;
+        
+        try {
+            setIsLoading(true);
+            
+            // When checked is true, we want vacation mode ON (set status to ARCHIVED)
+            // When checked is false, we want vacation mode OFF (set status to APPROVED)
+            const newStatus = checked ? "ARCHIVED" : "APPROVED";
+            
+            const response = await axios.patch(`/api/shops/${storeId}`, {
+                Status: newStatus
+            });
+            
+            if (response.data) {
+                setStore({...store, Status: newStatus});
+                setVacationMode(checked);
+                toast.success(`Store is now ${checked ? "in vacation mode" : "active"}`);
+            }
+            
+        } catch (error) {
+            toast.error("Failed to update store status");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const isStoreStatusPending = store?.Status === "PENDING";
 
     return (
         <div className="space-y-4">
@@ -309,42 +343,16 @@ export default function SettingsView({ storeId }: SettingsProps) {
                 <div className="space-y-2">
                     <Label>Store image</Label>
                     <div className="flex items-center gap-4 mt-2">
-                        {imageUrl ? (
-                            <div className="relative w-40 aspect-square">
-                                <Image 
-                                    src={imageUrl}
-                                    alt="Store image" 
-                                    fill
-                                    className="object-cover rounded-md"
-                                />
-                                <button
-                                    onClick={handleRemoveImage}
-                                    className="absolute -top-2 -right-2 bg-red-500 p-1 rounded-full hover:bg-red-600 transition"
-                                    type="button"
-                                    title="Remove Image"
-                                >
-                                    <Trash className="h-4 w-4 text-white" />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="w-40 aspect-square flex items-center justify-center bg-gray-100 rounded-md">
-                                <ImageIcon className="h-10 w-10 text-gray-400" />
-                            </div>
-                        )}
                         <div>
-                            <CldUploadButton
-                                options={{ maxFiles: 1 }}
-                                onUpload={handleUploadComplete}
-                                uploadPreset="ni1jajod"
-                            >
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    disabled={isLoading}
-                                >
-                                    {imageUrl ? "Change Image" : "Upload Image"}
-                                </Button>
-                            </CldUploadButton>
+                            <ImageUpload
+                                value={imageUrl ? [imageUrl] : []}
+                                disabled={isLoading}
+                                onChange={(url) => {
+                                    setImageUrl(url);
+                                    handleUploadComplete({ info: { secure_url: url } });
+                                }}
+                                onRemove={() => handleRemoveImage()}
+                            />
                             <p className="text-xs text-muted-foreground mt-2">
                                 Recommended: 800x800 pixels, square format
                             </p>
@@ -376,23 +384,18 @@ export default function SettingsView({ storeId }: SettingsProps) {
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                     <Label htmlFor="vacation-mode">Vacation mode</Label>
-                    <p className="text-sm text-muted-foreground">Temporarily disable your store</p>
+                    <p className="text-sm text-muted-foreground">
+                        {isStoreStatusPending 
+                            ? "This option is disabled while your store is pending approval" 
+                            : "Temporarily disable your store"}
+                    </p>
                     </div>
-                    <Switch id="vacation-mode" />
-                </div>
-                <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                    <Label htmlFor="featured-products">Featured products</Label>
-                    <p className="text-sm text-muted-foreground">Show featured products on your store homepage</p>
-                    </div>
-                    <Switch id="featured-products" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                    <Label htmlFor="customer-reviews">Customer reviews</Label>
-                    <p className="text-sm text-muted-foreground">Allow customers to leave reviews on your products</p>
-                    </div>
-                    <Switch id="customer-reviews" defaultChecked />
+                    <Switch 
+                        id="vacation-mode" 
+                        checked={vacationMode}
+                        onCheckedChange={handleVacationModeToggle}
+                        disabled={isLoading || isStoreStatusPending}
+                    />
                 </div>
                 </CardContent>
             </Card>

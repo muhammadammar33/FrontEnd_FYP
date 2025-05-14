@@ -68,15 +68,7 @@ export async function PATCH(
       return new NextResponse("Shop ID is required", { status: 400 });
     }
 
-    const { Name, Description, StoreCategoryId, ImageUrl } = body;
-
-    if (!Name) {
-      return new NextResponse("Name is required", { status: 400 });
-    }
-
-    if (!Description) {
-      return new NextResponse("Description is required", { status: 400 });
-    }
+    const { Name, Description, StoreCategoryId, ImageUrl, Status } = body;
 
     // Get the current store to verify ownership
     const currentStore = await db.stores.findUnique({
@@ -94,18 +86,29 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 403 });
     }
 
+    // Prepare update data
+    const updateData: any = {
+      UpdatedAt: new Date()
+    };
+
+    // Only include fields that were provided in the request
+    if (Name !== undefined) updateData.Name = Name;
+    if (Description !== undefined) updateData.Description = Description;
+    if (StoreCategoryId !== undefined) updateData.StoreCategoryId = StoreCategoryId || null;
+    if (ImageUrl !== undefined) updateData.ImageUrl = ImageUrl || "";
+    if (Status !== undefined) updateData.Status = Status;
+
+    // Validate required fields for general updates (not status changes)
+    if (Status === undefined && (Name === undefined || Description === undefined)) {
+      return new NextResponse("Name and Description are required for general updates", { status: 400 });
+    }
+
     // Update the store
     const updatedStore = await db.stores.update({
       where: {
         Id: shopId
       },
-      data: {
-        Name,
-        Description,
-        StoreCategoryId: StoreCategoryId || null,
-        ImageUrl: ImageUrl || "",
-        UpdatedAt: new Date()
-      },
+      data: updateData,
       include: {
         StoreCategory: true
       }
