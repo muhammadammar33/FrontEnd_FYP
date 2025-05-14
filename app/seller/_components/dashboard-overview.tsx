@@ -19,6 +19,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
     const [stockCount, setStockCount] = useState<number | null>(null);
     const [productCount, setProductCount] = useState<number | null>(null);
     const [graphRevenue, setGraphRevenue] = useState<any[] | null>(null);
+    const [buyerCount, setBuyerCount] = useState<any[] | null>(null);
 
     useEffect(() => {
         fetch(`/api/${storeId}/dashboard/revenue`)
@@ -65,6 +66,16 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         .catch(error => console.error("Error fetching graph revenue:", error));
     }, [storeId]);
 
+        // Fetch buyer count
+  useEffect(() => {
+    fetch(`/api/${storeId}/dashboard/buyer-count`)
+      .then((res) => res.json())
+      .then((data) => {
+        setBuyerCount(data.buyerCount);
+      })
+      .catch((error) => console.error("Error fetching buyer count:", error));
+  }, [storeId]);
+
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -82,11 +93,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                     </div>
                 )}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            {/* <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <ArrowUpIcon className="h-4 w-4 text-emerald-500" />
                 <span className="text-emerald-500">+20.1%</span>
                 <span>from last month</span>
-            </div>
+            </div> */}
             </CardContent>
         </Card>
         <Card>
@@ -104,11 +115,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                     </div>
                 )}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            {/* <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <ArrowUpIcon className="h-4 w-4 text-emerald-500" />
                 <span className="text-emerald-500">+12.2%</span>
                 <span>from last month</span>
-            </div>
+            </div> */}
             </CardContent>
         </Card>
         <Card>
@@ -126,11 +137,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                     </div>
                 )}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            {/* <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <ArrowUpIcon className="h-4 w-4 text-emerald-500" />
                 <span className="text-emerald-500">+8 new</span>
                 <span>from last month</span>
-            </div>
+            </div> */}
             </CardContent>
         </Card>
         <Card>
@@ -139,12 +150,21 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
             <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+                {buyerCount !== null ? (
+              buyerCount
+            ) : (
+              <div className="flex items-center space-x-2">
+                <div className="h-6 w-24 animate-pulse rounded bg-muted"></div>
+              </div>
+            )}
+          </div>              
+
+            {/* <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <ArrowUpIcon className="h-4 w-4 text-emerald-500" />
                 <span className="text-emerald-500">+32</span>
                 <span>from last month</span>
-            </div>
+            </div> */}
             </CardContent>
         </Card>
         <Card className="col-span-4">
