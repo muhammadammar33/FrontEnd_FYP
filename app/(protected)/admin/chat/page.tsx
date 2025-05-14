@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { FiSend, FiSearch } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMoreVertical } from 'react-icons/fi';
 import { BiArrowBack } from 'react-icons/bi';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
@@ -496,7 +496,7 @@ export default function Chat() {
                                 </div>
                             </div>
 
-                           
+                            
                         </div>
 
                         {/* Messages Area */}
