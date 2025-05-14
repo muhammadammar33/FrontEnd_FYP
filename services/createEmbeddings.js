@@ -1,6 +1,13 @@
-import { tokenizerInstance, textModelInstance } from "./modelInitialization.js";
+import {
+  tokenizerInstance,
+  textModelInstance,
+  getImageProcessor,
+  getVisionModel,
+} from "./modelInitialization.js";
 
-const getEmbeddings = async (text) => {
+import { RawImage } from "@huggingface/transformers";
+
+const getTextEmbeddings = async (text) => {
   if (!tokenizerInstance || !textModelInstance) {
     console.error(
       "Models not initialized. Make sure initializeModels() was called."
@@ -16,6 +23,26 @@ const getEmbeddings = async (text) => {
   });
   const embeddings = await textModelInstance(inputs);
   return Array.from(embeddings.text_embeds.ort_tensor.cpuData);
+};
+
+// Function to convert image to embeddings given a URL
+const getImageEmbeddings = async (imageUrl) => {
+  const imageProcessorInstance = getImageProcessor();
+  const visionModelInstance = getVisionModel();
+  if (!imageProcessorInstance || !visionModelInstance) {
+    console.error(
+      "Models not initialized. Make sure initializeModels() was called."
+    );
+    throw new Error(
+      "Embedding models are not ready. Please try again later or contact support."
+    );
+  }
+  const image = await RawImage.fromURL(imageUrl);
+  const image_inputs = await imageProcessorInstance(image);
+
+  const { image_embeds } = await visionModelInstance(image_inputs);
+
+  return Array.from(image_embeds.ort_tensor.cpuData);
 };
 
 const convertJsonToText = (data) => {
@@ -52,4 +79,9 @@ const getEmbeddingsFromData = async (data) => {
   return Array.from(embeddings.text_embeds.ort_tensor.cpuData);
 };
 
-export { getEmbeddings, getEmbeddingsFromData, convertJsonToText };
+export {
+  getTextEmbeddings,
+  getEmbeddingsFromData,
+  convertJsonToText,
+  getImageEmbeddings,
+};
