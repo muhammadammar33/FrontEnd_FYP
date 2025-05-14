@@ -78,7 +78,35 @@ model User {
   accounts              Account[]
   twoFactorConfirmation TwoFactorConfirmation?
   storeCategories       StoreCategories[]      // Added relation to StoreCategories
+  participants          ConversationParticipant[]
+  messages              Message[]
 }
+
+// Join table for the many-to-many relationship between User and Conversation
+model ConversationParticipant {
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String
+  conversation          Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId        String
+  createdAt             DateTime               @default(now())
+
+  @@id([userId, conversationId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+// Message model
+model Message {
+  id                    String                 @id @default(cuid())
+  content               String
+  createdAt             DateTime               @default(now())
+  sender                User                   @relation(fields: [senderId], references: [id])
+  senderId              String
+  conversation          Conversation           @relation(fields: [conversationId], references: [id])
+  conversationId        String
+}
+
+
 
 model Account {
   userId            String
