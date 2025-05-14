@@ -22,7 +22,6 @@ const Navbar = async () => {
         const categories = dbCategories.map(category => ({
             id: category.Id,
             name: category.Name,
-            billboard: { id: category.BillBoardId } as Billboard,
             createdAt: category.CreatedAt,
             updatedAt: category.UpdatedAt,
             storeId: category.StoreId

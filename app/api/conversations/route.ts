@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { userIds } = body;
-    
+    console.log('Received user IDs:', userIds);
     if (!userIds || !Array.isArray(userIds) || userIds.length < 2) {
       return NextResponse.json(
         { success: false, message: 'At least two user IDs are required' }, 

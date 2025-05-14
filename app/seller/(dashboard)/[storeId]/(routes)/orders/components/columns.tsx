@@ -3,6 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 
 export type OrderColumn = {
     id: string
+    userId: string
     phone: string
     address: string
     isPaid: boolean

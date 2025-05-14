@@ -27,7 +27,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ storeId
                 in: productIds
             }
         }
-    })
+    });
+
+    // Check if any product is out of stock
+    const outOfStockProducts = products.filter(product => product.Stock <= 0);
+    if (outOfStockProducts.length > 0) {
+        return new NextResponse(`Products out of stock: ${outOfStockProducts.map(p => p.Name).join(', ')}`, { status: 400 });
+    }
+
+    // Update the stock for each product
+    for (const product of products) {
+        await db.products.update({
+            where: {
+                Id: product.Id
+            },
+            data: {
+                Stock: {
+                    decrement: 1
+                },
+                UpdatedAt: new Date()
+            }
+        });
+    }
 
     const Store = await db.stores.findFirst({
         where: {
@@ -60,7 +81,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ storeId
         data: {
             Id: crypto.randomUUID(), 
             StoreId: storeId,
-            IsPaid: false,
+            userId: User?.id ?? "", // Add userId from the User object
+            IsPaid: true,
             Phone: User?.phone ?? "", 
             Address: "", // Add appropriate address value
             CreatedAt: new Date(),
