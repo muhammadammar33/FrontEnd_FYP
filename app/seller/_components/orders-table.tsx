@@ -230,7 +230,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                 <TableCell className="font-medium">{order.id}</TableCell>
                                 <TableCell className="font-medium">{order.userId}</TableCell>
                                 <TableCell>
-                                <div>{order.phone}</div>
+                                <div>{order.createdAt}</div>
                                 <div className="text-xs text-muted-foreground">{order.address}</div>
                                 </TableCell>
                                 <TableCell>{order.totalPrice}</TableCell>

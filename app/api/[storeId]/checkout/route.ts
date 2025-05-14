@@ -2,6 +2,7 @@ import {db} from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { currentUser } from "@/lib/auth";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,7 @@ export async function OPTIONS() {
 export async function POST(req: Request, { params }: { params: Promise<{ storeId: string }> }) {
     const { productIds } = await req.json();
     const { storeId } = await params; 
+    const buyer = await currentUser();
 
     if(!productIds || productIds.length === 0) {
         return new NextResponse("Product ids are required", { status: 400 });
@@ -81,7 +83,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ storeId
         data: {
             Id: crypto.randomUUID(), 
             StoreId: storeId,
-            userId: User?.id ?? "", // Add userId from the User object
+            userId: buyer?.id ?? "", // Add userId from the User object
             IsPaid: true,
             Phone: User?.phone ?? "", 
             Address: "", // Add appropriate address value
