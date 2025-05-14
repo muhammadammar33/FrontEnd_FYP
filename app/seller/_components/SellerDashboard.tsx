@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { BarChart3, Box, Home, LayoutDashboard, LogOut, Package, Settings, ShoppingCart, Users } from "lucide-react"
+import { useState, useEffect } from "react"
+import { BarChart3, Box, Home, LayoutDashboard, Book, Palette, Package, Settings, ShoppingCart, ChartColumnStacked, Users } from "lucide-react"
 import {
     SidebarProvider,
     Sidebar,
@@ -28,10 +28,15 @@ import {
 import DashboardOverview from "../_components/dashboard-overview"
 import ProductsTable from "../_components/products-table"
 import OrdersTable from "../_components/orders-table"
+import CategoriesTable from "../_components/categories-table"
+import ColorsTable from "../_components/colors-table"
+import BillboardsTable from "../_components/billboards-table"
 import AnalyticsView from "../_components/analytics-view"
 import SettingsView from "../_components/settings-view"
 import { ExitIcon } from "@radix-ui/react-icons"
 import { signOut } from "next-auth/react";
+import { useSearchParams } from "next/navigation"
+import { currentUser } from "@/lib/auth";
 
 type ProductColumn = {
     id: string
@@ -47,7 +52,7 @@ type ProductColumn = {
     imageUrl?: string
 }
 
-export type OrderColumn = {
+type OrderColumn = {
     id: string
     phone: string
     address: string
@@ -57,14 +62,59 @@ export type OrderColumn = {
     createdAt: string
 }
 
+type CategoryColumn = {
+    id: string
+    name: string
+    createdAt: string
+}
+
+type ColorColumn = {
+    id: string
+    name: string
+    value: string
+    createdAt: string
+}
+
+type BillboardColumn = {
+    id: string
+    Label: string
+    imageUrl?: string
+    CreatedAt: string
+}
+
 interface SellerDashboardProps {
     storeId: string;
     products: ProductColumn[];
     orders: OrderColumn[];
+    categories: CategoryColumn[];
+    colors: ColorColumn[];
+    billboards: BillboardColumn[]
 }
 
-export default function SellerDashboard({ storeId, products, orders }: SellerDashboardProps) {
+export default function SellerDashboard({ storeId, products, orders, categories, colors, billboards }: SellerDashboardProps) {
     const [activeTab, setActiveTab] = useState("overview")
+    const searchParams = useSearchParams()
+    const tabParam = searchParams.get('tab')
+    const [user, setUser] = useState<{ name: string } | null>(null);
+
+    useEffect(() => {
+        if (tabParam) {
+            setActiveTab(tabParam)
+        }
+    }, [tabParam])
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userData = await currentUser();
+                setUser(userData);
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+        
+        fetchUser();
+    }, []);
 
     return (
         <SidebarProvider >
@@ -88,13 +138,35 @@ export default function SellerDashboard({ storeId, products, orders }: SellerDas
                     <SidebarMenuButton isActive={activeTab === "products"} onClick={() => setActiveTab("products")}>
                     <Package className="h-4 w-4" />
                     <span>Products</span>
+                    <Badge className="ml-auto">{products.length}</Badge>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton isActive={activeTab === "orders"} onClick={() => setActiveTab("orders")}>
                     <ShoppingCart className="h-4 w-4" />
                     <span>Orders</span>
-                    <Badge className="ml-auto">12</Badge>
+                    <Badge className="ml-auto">{orders.length}</Badge>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton isActive={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
+                    <ChartColumnStacked className="h-4 w-4" />
+                    <span>Categories</span>
+                    <Badge className="ml-auto">{categories.length}</Badge>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton isActive={activeTab === "colors"} onClick={() => setActiveTab("colors")}>
+                    <Palette className="h-4 w-4" />
+                    <span>Colors</span>
+                    <Badge className="ml-auto">{colors.length}</Badge>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton isActive={activeTab === "billboards"} onClick={() => setActiveTab("billboards")}>
+                    <Book className="h-4 w-4" />
+                    <span>Billboards</span>
+                    <Badge className="ml-auto">{billboards.length}</Badge>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
@@ -125,7 +197,7 @@ export default function SellerDashboard({ storeId, products, orders }: SellerDas
                     <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <div>
-                    <p className="text-sm font-medium">Jane Doe</p>
+                    <p className="text-sm font-medium">{user?.name}</p>
                     <p className="text-xs text-muted-foreground">Premium Seller</p>
                     </div>
                 </div>
@@ -165,16 +237,19 @@ export default function SellerDashboard({ storeId, products, orders }: SellerDas
                     {activeTab === "overview" && "Dashboard Overview"}
                     {activeTab === "products" && "Product Management"}
                     {activeTab === "orders" && "Order Management"}
+                    {activeTab === "categories" && "Categories Management"}
+                    {activeTab === "colors" && "Colors Management"}
+                    {activeTab === "billboards" && "Billboards Management"}
                     {activeTab === "analytics" && "Analytics & Reports"}
                     {activeTab === "customers" && "Customer Management"}
                     {activeTab === "settings" && "Account Settings"}
                 </h1>
                 <div className="flex items-center gap-4">
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={() => window.location.href = `/store/${storeId}`}>
                     <Home className="mr-2 h-4 w-4" />
                     Visit Store
                     </Button>
-                    <Button>
+                    <Button onClick={() => window.location.href = `/seller/${storeId}/products/new`}>
                     <Package className="mr-2 h-4 w-4" />
                     Add New Product
                     </Button>
@@ -185,6 +260,9 @@ export default function SellerDashboard({ storeId, products, orders }: SellerDas
                 {activeTab === "overview" && <DashboardOverview storeId={storeId} />}
                 {activeTab === "products" && <ProductsTable products={products} />}
                 {activeTab === "orders" && <OrdersTable orders={orders} />}
+                {activeTab === "categories" && <CategoriesTable categories={categories} />}
+                {activeTab === "colors" && <ColorsTable colors={colors} />}
+                {activeTab === "billboards" && <BillboardsTable billboards={billboards} />}
                 {activeTab === "analytics" && <AnalyticsView />}
                 {activeTab === "customers" && (
                 <div className="grid gap-4">
@@ -199,7 +277,7 @@ export default function SellerDashboard({ storeId, products, orders }: SellerDas
                     </Card>
                 </div>
                 )}
-                {activeTab === "settings" && <SettingsView />}
+                {activeTab === "settings" && <SettingsView storeId={storeId} />}
             </main>
             </div>
         </div>

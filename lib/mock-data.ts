@@ -20,7 +20,7 @@ export const mockProducts = [
         name: "Premium Denim Jeans",
         price: 79.99,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/Denim1.jpeg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -35,7 +35,7 @@ export const mockProducts = [
         originalPrice: 69.99,
         discount: 28,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/Hoodie1.jpeg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -48,7 +48,7 @@ export const mockProducts = [
         name: "Leather Crossbody Bag",
         price: 89.99,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/CrossBag1.jpeg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -61,7 +61,7 @@ export const mockProducts = [
         name: "Athletic Running Shoes",
         price: 119.99,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/Shoes1.jpeg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -76,7 +76,7 @@ export const mockProducts = [
         originalPrice: 79.99,
         discount: 25,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/EarBuds1.jpeg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -89,7 +89,7 @@ export const mockProducts = [
         name: "Stainless Steel Water Bottle",
         price: 24.99,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/bottle1.jpg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],
@@ -104,7 +104,7 @@ export const mockProducts = [
         originalPrice: 59.99,
         discount: 33,
         images: [
-        "/placeholder.svg?height=400&width=400",
+        "/images/glasses1.png?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         "/placeholder.svg?height=400&width=400",
         ],

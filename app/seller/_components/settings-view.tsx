@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,17 +9,174 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { sellerSettings } from "@/actions/settings";
+import { toast } from 'react-hot-toast';
+import axios from "axios";
+import Image from "next/image";
+import { CldUploadButton } from "next-cloudinary";
+import { ImageIcon, Trash } from "lucide-react";
 
-export default function SettingsView() {
-    const [isLoading, setIsLoading] = useState(false)
+interface Store {
+    Id: string;
+    Name: string;
+    Description: string;
+    StoreCategoryId: string | null;
+    ImageUrl: string;
+    UserId: string;
+    CreatedAt: string;
+    UpdatedAt: string;
+    Status: string;
+    StoreCategory?: {
+        Id: string;
+        Name: string;
+    };
+}
 
-    const handleSave = () => {
-        setIsLoading(true)
-        // Simulate API call
-        setTimeout(() => {
-        setIsLoading(false)
-        }, 1000)
-    }
+interface StoreCategory {
+    Id: string;
+    Name: string;
+    Description: string | null;
+}
+
+interface SettingsProps {
+    storeId: string;
+}
+
+export default function SettingsView({ storeId }: SettingsProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [store, setStore] = useState<Store | null>(null);
+    const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [imageUrl, setImageUrl] = useState<string>("");
+    const user = useCurrentUser();
+    const nameRef = useRef<HTMLInputElement>(null);
+    const storeNameRef = useRef<HTMLInputElement>(null);
+    const storeDescriptionRef = useRef<HTMLTextAreaElement>(null);
+
+    // Fetch store data when component mounts
+    useEffect(() => {
+        if (storeId) {
+            fetchStore();
+            fetchStoreCategories();
+        }
+    }, [storeId]);
+
+    // Set initial values after store data is loaded
+    useEffect(() => {
+        if (store) {
+            setSelectedCategory(store.StoreCategoryId || "");
+            setImageUrl(store.ImageUrl || "");
+        }
+    }, [store]);
+
+    const fetchStore = async () => {
+        setIsLoading(true);
+        setError("");
+        try {
+            const response = await axios.get(`/api/shops/${storeId}`);
+            if (response.data) {
+                setStore(response.data);
+                console.log("Store data fetched:", response.data);
+            } else {
+                setError("No store data found.");
+                toast.error("No store data found.");
+            }
+        } catch (err) {
+            setError("Failed to fetch store data.");
+            toast.error("Failed to fetch store data.");
+            console.error("Error fetching store:", err);
+        }
+        setIsLoading(false);
+    };
+
+    const fetchStoreCategories = async () => {
+        try {
+            const response = await axios.get('/api/admin/store-categories');
+            if (response.data) {
+                setStoreCategories(response.data);
+            }
+        } catch (err) {
+            console.error("Error fetching store categories:", err);
+        }
+    };
+
+    const handleProfileSave = async () => {
+        if (!user) return;
+        
+        try {
+            setIsLoading(true);
+            
+            const name = nameRef.current?.value;
+            
+            if (!name || name === user.name) {
+                toast.error("Please enter a new name");
+                setIsLoading(false);
+                return;
+            }
+            
+            const response = await sellerSettings({ name });
+            
+            if (response.error) {
+                toast.error(response.error);
+                return;
+            }
+            
+            toast.success(response.success || "Your profile has been updated");
+            
+        } catch (error) {
+            toast.error("Something went wrong, please try again later");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleStoreSave = async () => {
+        if (!store) return;
+        
+        try {
+            setIsLoading(true);
+            
+            const storeName = storeNameRef.current?.value;
+            const storeDescription = storeDescriptionRef.current?.value;
+            
+            if (!storeName || !storeDescription) {
+                toast.error("Please fill in all required fields");
+                setIsLoading(false);
+                return;
+            }
+            
+            // Update store data
+            const response = await axios.patch(`/api/shops/${storeId}`, {
+                Name: storeName,
+                Description: storeDescription,
+                StoreCategoryId: selectedCategory || undefined,
+                ImageUrl: imageUrl
+            });
+            
+            if (response.data) {
+                setStore(response.data);
+                toast.success("Store information updated successfully");
+            }
+            
+        } catch (error) {
+            toast.error("Failed to update store information");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUploadComplete = (result: any) => {
+        setImageUrl(result?.info?.secure_url);
+        toast.success("Image uploaded successfully");
+    };
+
+    const handleRemoveImage = () => {
+        setImageUrl("");
+    };
 
     return (
         <div className="space-y-4">
@@ -37,68 +194,68 @@ export default function SettingsView() {
             </TabsList>
 
             <TabsContent value="profile" className="space-y-4">
-            <Card>
-                <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your account profile information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Profile Information</CardTitle>
+                    <CardDescription>Update your account profile information</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                     <div className="space-y-2">
-                    <Label htmlFor="first-name">First name</Label>
-                    <Input id="first-name" defaultValue="Jane" />
+                        <Label htmlFor="name">Name</Label>
+                        <Input 
+                            id="name" 
+                            ref={nameRef}
+                            defaultValue={user?.name || ""} 
+                            placeholder="Your name" 
+                        />
                     </div>
                     <div className="space-y-2">
-                    <Label htmlFor="last-name">Last name</Label>
-                    <Input id="last-name" defaultValue="Doe" />
+                        <Label htmlFor="email">Email</Label>
+                        <Input 
+                            id="email" 
+                            type="email" 
+                            defaultValue={user?.email || ""} 
+                            placeholder="Your email address"
+                            disabled 
+                        />
+                        {user?.email && user.emailVerified === null && (
+                            <p className="text-sm text-destructive">Your email is not verified</p>
+                        )}
                     </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue="jane.doe@example.com" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                    id="bio"
-                    placeholder="Tell us about yourself"
-                    defaultValue="Passionate e-commerce seller specializing in handmade crafts and sustainable products."
-                    />
-                </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                <Button onClick={handleSave} disabled={isLoading}>
-                    {isLoading ? "Saving..." : "Save Changes"}
-                </Button>
-                </CardFooter>
-            </Card>
+                    </CardContent>
+                    <CardFooter className="flex justify-end">
+                    <Button onClick={handleProfileSave} disabled={isLoading}>
+                        {isLoading ? "Saving..." : "Save Changes"}
+                    </Button>
+                    </CardFooter>
+                </Card>
 
-            <Card>
-                <CardHeader>
-                <CardTitle>Password</CardTitle>
-                <CardDescription>Update your password</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="current-password">Current password</Label>
-                    <Input id="current-password" type="password" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="new-password">New password</Label>
-                    <Input id="new-password" type="password" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm password</Label>
-                    <Input id="confirm-password" type="password" />
-                </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                <Button variant="outline" className="mr-2">
-                    Cancel
-                </Button>
-                <Button>Update Password</Button>
-                </CardFooter>
-            </Card>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Password</CardTitle>
+                    <CardDescription>Update your password</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="current-password">Current password</Label>
+                        <Input id="current-password" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="new-password">New password</Label>
+                        <Input id="new-password" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirm password</Label>
+                        <Input id="confirm-password" type="password" />
+                    </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-end">
+                    <Button variant="outline" className="mr-2">
+                        Cancel
+                    </Button>
+                    <Button>Update Password</Button>
+                    </CardFooter>
+                </Card>
             </TabsContent>
 
             <TabsContent value="store" className="space-y-4">
@@ -108,43 +265,103 @@ export default function SettingsView() {
                 <CardDescription>Update your store details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                {isLoading && <p className="text-sm">Loading store data...</p>}
                 <div className="space-y-2">
                     <Label htmlFor="store-name">Store name</Label>
-                    <Input id="store-name" defaultValue="Jane's Crafts & Creations" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="store-url">Store URL</Label>
-                    <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">https://marketplace.com/</span>
-                    <Input id="store-url" defaultValue="janes-crafts" />
-                    </div>
+                    <Input 
+                        id="store-name" 
+                        ref={storeNameRef}
+                        defaultValue={store?.Name || ""} 
+                        placeholder="Store name" 
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="store-description">Store description</Label>
                     <Textarea
-                    id="store-description"
-                    placeholder="Describe your store"
-                    defaultValue="Handmade crafts and sustainable products made with love and care for the environment."
+                        id="store-description"
+                        ref={storeDescriptionRef}
+                        placeholder="Describe your store"
+                        defaultValue={store?.Description || ""}
                     />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="store-category">Primary category</Label>
-                    <Select defaultValue="handmade">
+                    <Select 
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                    >
                     <SelectTrigger id="store-category">
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="handmade">Handmade Crafts</SelectItem>
-                        <SelectItem value="clothing">Clothing & Accessories</SelectItem>
-                        <SelectItem value="home">Home & Living</SelectItem>
-                        <SelectItem value="jewelry">Jewelry</SelectItem>
-                        <SelectItem value="art">Art & Collectibles</SelectItem>
+                        {storeCategories.map((category) => (
+                            <SelectItem key={category.Id} value={category.Id}>
+                                {category.Name}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {store?.StoreCategory ? `Current: ${store.StoreCategory.Name}` : 'No category selected'}
+                    </p>
+                </div>
+                <div className="space-y-2">
+                    <Label>Store image</Label>
+                    <div className="flex items-center gap-4 mt-2">
+                        {imageUrl ? (
+                            <div className="relative w-40 aspect-square">
+                                <Image 
+                                    src={imageUrl}
+                                    alt="Store image" 
+                                    fill
+                                    className="object-cover rounded-md"
+                                />
+                                <button
+                                    onClick={handleRemoveImage}
+                                    className="absolute -top-2 -right-2 bg-red-500 p-1 rounded-full hover:bg-red-600 transition"
+                                    type="button"
+                                    title="Remove Image"
+                                >
+                                    <Trash className="h-4 w-4 text-white" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="w-40 aspect-square flex items-center justify-center bg-gray-100 rounded-md">
+                                <ImageIcon className="h-10 w-10 text-gray-400" />
+                            </div>
+                        )}
+                        <div>
+                            <CldUploadButton
+                                options={{ maxFiles: 1 }}
+                                onUpload={handleUploadComplete}
+                                uploadPreset="ni1jajod"
+                            >
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={isLoading}
+                                >
+                                    {imageUrl ? "Change Image" : "Upload Image"}
+                                </Button>
+                            </CldUploadButton>
+                            <p className="text-xs text-muted-foreground mt-2">
+                                Recommended: 800x800 pixels, square format
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="store-status">Store Status</Label>
+                    <Input 
+                        id="store-status" 
+                        value={store?.Status || ""}
+                        disabled
+                    />
                 </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                <Button onClick={handleSave} disabled={isLoading}>
+                <Button onClick={handleStoreSave} disabled={isLoading}>
                     {isLoading ? "Saving..." : "Save Changes"}
                 </Button>
                 </CardFooter>
@@ -315,7 +532,7 @@ export default function SettingsView() {
                 </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                <Button onClick={handleSave} disabled={isLoading}>
+                <Button onClick={handleProfileSave} disabled={isLoading}>
                     {isLoading ? "Saving..." : "Save Preferences"}
                 </Button>
                 </CardFooter>

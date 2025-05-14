@@ -26,10 +26,10 @@ export async function POST(
             return new NextResponse("Name is required", { status: 400});
         }
 
-        if (!BillboardId) {
-            console.log('Billboard id is required', BillboardId);
-            return new NextResponse("Billboard id is required", { status: 400});
-        }
+        // if (!BillboardId) {
+        //     console.log('Billboard id is required', BillboardId);
+        //     return new NextResponse("Billboard id is required", { status: 400});
+        // }
 
         if (!storeId) {
             console.log('Store id is required', storeId);
@@ -51,7 +51,6 @@ export async function POST(
             data : {
                 Id: crypto.randomUUID(),
                 Name,
-                BillBoardId: BillboardId,
                 StoreId: storeId,
                 CreatedAt: new Date(),
                 UpdatedAt: new Date(),

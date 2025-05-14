@@ -41,9 +41,6 @@ const CategoryPage = async ({ params, searchParams }: { params: Params, searchPa
     });
 
     const billboardData = await db.billboards.findFirst({
-        where: {
-            Id: category?.BillBoardId,
-        },
         orderBy: {
             CreatedAt: "desc",
         },
@@ -66,9 +63,6 @@ const CategoryPage = async ({ params, searchParams }: { params: Params, searchPa
             where: {
                 Id: product.CategoryId,
             },
-            include: {
-                Billboards: true,
-            }
         });
         const Size = await db.sizes.findFirst({
             where: {
@@ -86,14 +80,6 @@ const CategoryPage = async ({ params, searchParams }: { params: Params, searchPa
             category: Category ? {
                 id: Category.Id,
                 name: Category.Name,
-                billboard: {
-                    id: Category.Billboards.Id,
-                    label: Category.Billboards.Label,
-                    imageUrl: Category.Billboards.ImageUrl,
-                    updatedAt: Category.Billboards.UpdatedAt,
-                    storeId: Category.Billboards.StoreId,
-                    createdAt: Category.Billboards.CreatedAt,
-                },
                 updatedAt: Category.UpdatedAt,
                 storeId: Category.StoreId,
                 createdAt: Category.CreatedAt,

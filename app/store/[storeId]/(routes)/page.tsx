@@ -58,9 +58,6 @@ const HomePage = async ({ params }: StorePageProps) => {
             where: {
                 Id: product.CategoryId,
             },
-            include: {
-                Billboards: true,
-            }
         });
         const Size = await db.sizes.findFirst({
             where: {
@@ -78,14 +75,6 @@ const HomePage = async ({ params }: StorePageProps) => {
             category: Category ? {
                 id: Category.Id,
                 name: Category.Name,
-                billboard: {
-                    id: Category.Billboards.Id,
-                    label: Category.Billboards.Label,
-                    imageUrl: Category.Billboards.ImageUrl,
-                    updatedAt: Category.Billboards.UpdatedAt,
-                    storeId: Category.Billboards.StoreId,
-                    createdAt: Category.Billboards.CreatedAt,
-                },
                 updatedAt: Category.UpdatedAt,
                 storeId: Category.StoreId,
                 createdAt: Category.CreatedAt,

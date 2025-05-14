@@ -92,7 +92,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
             await axios.post(`/api/${params.storeId}/products`, data)
         }
         router.refresh()
-        router.push(`/seller/${params.storeId}`)
+        window.location.assign(`/seller/${params.storeId}?tab=products`)
         toast.success(toastMessage)
         } catch (err) {
         toast.error("Something went wrong.")

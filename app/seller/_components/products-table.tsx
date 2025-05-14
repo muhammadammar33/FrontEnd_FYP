@@ -80,8 +80,11 @@ export default function ProductsTable({ products }: ProductsTableProps) {
             <h2 className="text-2xl font-bold tracking-tight">Products ({products.length}) </h2>
             <p className="text-muted-foreground">Manage your product inventory and listings</p>
             </div>
-            <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={() => {
+                    const storeId = Array.isArray(params.storeId) ? params.storeId[0] : params.storeId;
+                    window.location.href = `/seller/${storeId}/products/new`;
+                }}>
+                <Plus className="mr-2 h-4 w-4" />
                 Add Product
             </Button>
         </div>

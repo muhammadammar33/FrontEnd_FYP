@@ -18,7 +18,7 @@ type ProductColumn = {
     imageUrl?: string
 }
 
-export type OrderColumn = {
+type OrderColumn = {
     id: string
     phone: string
     address: string
@@ -26,6 +26,26 @@ export type OrderColumn = {
     totalPrice: string
     products: string
     createdAt: string
+}
+
+type CategoryColumn = {
+    id: string
+    name: string
+    createdAt: string
+}
+
+type ColorColumn = {
+    id: string
+    name: string
+    value: string
+    createdAt: string
+}
+
+type BillboardColumn = {
+    id: string
+    Label: string
+    imageUrl?: string
+    CreatedAt: string
 }
 
 const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
@@ -88,10 +108,64 @@ const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: stri
         createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
     }));
 
+    const categories = await db.categories.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        orderBy: {
+            CreatedAt: 'desc'
+        }
+    })
+
+    const formattedCategories: CategoryColumn[] = categories.map(item => ({
+        id: item.Id,
+        name: item.Name,
+        createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
+    }));
+
+    const colors = await db.colors.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        orderBy: {
+            CreatedAt: 'desc'
+        }
+    })
+
+    const formattedColors: ColorColumn[] = colors.map(item => ({
+        id: item.Id,
+        name: item.Name,
+        value: item.Value,
+        createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
+    }));
+
+    const billboards = await db.billboards.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        orderBy: {
+            CreatedAt: 'desc'
+        }
+    })
+
+    const formattedBillboards: BillboardColumn[] = billboards.map(item => ({
+        id: item.Id,
+        Label: item.Label,
+        imageUrl: item.ImageUrl,
+        CreatedAt: format(item.CreatedAt, "MMMM do, yyyy"),
+    }));
+
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
-            <SellerDashboard storeId={(await params).storeId} products={formattedProducts} orders={formattedOrders}/>
+            <SellerDashboard 
+                storeId={(await params).storeId} 
+                products={formattedProducts} 
+                orders={formattedOrders}
+                categories={formattedCategories}
+                colors={formattedColors}
+                billboards={formattedBillboards}
+            />
         </div>
     );
 };

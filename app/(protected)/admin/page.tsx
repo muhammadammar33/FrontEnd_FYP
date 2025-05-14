@@ -34,7 +34,11 @@ const DashboardPage = async ({ params }: { params: Promise<{ storeId: string }> 
         <div className="flex-1 p-8 pt-6 space-y-4">
             <div className="flex items-center justify-between">
                 <Heading title="Dashboard" description="Overview of your le'Elysian" />
-                {/* <PreviewStore storeId={(await params).storeId} /> */}
+                <div className="flex gap-2">
+                    <Link href="/admin/store-categories">
+                        <Button>Manage Store Categories</Button>
+                    </Link>
+                </div>
             </div>
             <Separator />
             <div className="grid grid-cols-3 gap-4">

@@ -35,20 +35,25 @@ model Products {
 }
 
 model Stores {
-  Id          String       @id(map: "PK_Stores") @db.Uuid
-  Name        String       @db.VarChar(100)
-  Description String       @db.VarChar(500)
-  UserId      String
-  CreatedAt   DateTime     @db.Timestamptz(6)
-  UpdatedAt   DateTime     @db.Timestamptz(6)
-  Reason      String       @default("") @db.VarChar(500)
-  Status      StoreStatus  @default(PENDING)
-  Billboards  Billboards[]
-  Categories  Categories[]
-  Colors      Colors[]
-  Order       Order[]
-  Products    Products[]
-  Sizes       Sizes[]
+  Id             String           @id(map: "PK_Stores") @db.Uuid
+  Name           String           @db.VarChar(100)
+  Description    String           @db.VarChar(500)
+  ImageUrl       String           @db.VarChar(255) @default("")
+  UserId         String
+  CreatedAt      DateTime         @db.Timestamptz(6)
+  UpdatedAt      DateTime         @db.Timestamptz(6)
+  Reason         String           @default("") @db.VarChar(500)
+  Status         StoreStatus      @default(PENDING)
+  StoreCategoryId String?         @db.Uuid
+  Billboards     Billboards[]
+  Categories     Categories[]
+  Colors         Colors[]
+  Order          Order[]
+  Products       Products[]
+  Sizes          Sizes[]
+  StoreCategory  StoreCategories? @relation(fields: [StoreCategoryId], references: [Id], onDelete: SetNull, onUpdate: NoAction, map: "FK_Stores_StoreCategories_StoreCategoryId")
+
+  @@index([StoreCategoryId], map: "IX_Stores_StoreCategoryId")
 }
 
 model EFMigrationsHistory {
@@ -72,6 +77,7 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   accounts              Account[]
   twoFactorConfirmation TwoFactorConfirmation?
+  storeCategories       StoreCategories[]      // Added relation to StoreCategories
 }
 
 model Account {
@@ -134,7 +140,6 @@ model Billboards {
   CreatedAt  DateTime     @db.Timestamptz(6)
   UpdatedAt  DateTime     @db.Timestamptz(6)
   Stores     Stores       @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Billboards_Stores_StoreId")
-  Categories Categories[]
 
   @@index([StoreId], map: "IX_Billboards_StoreId")
 }
@@ -142,15 +147,12 @@ model Billboards {
 model Categories {
   Id          String     @id(map: "PK_Categories") @db.Uuid
   StoreId     String     @db.Uuid
-  BillBoardId String     @db.Uuid
   Name        String     @db.VarChar(255)
   CreatedAt   DateTime   @db.Timestamptz(6)
   UpdatedAt   DateTime   @db.Timestamptz(6)
-  Billboards  Billboards @relation(fields: [BillBoardId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Billboards_BillBoardId")
   Stores      Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Stores_StoreId")
   Products    Products[]
 
-  @@index([BillBoardId], map: "IX_Categories_BillBoardId")
   @@index([StoreId], map: "IX_Categories_StoreId")
 }
 
@@ -214,6 +216,19 @@ model OrderItem {
 
   @@index([OrderId], map: "IX_OrderItem_OrderId")
   @@index([ProductId], map: "IX_OrderItem_ProductId")
+}
+
+model StoreCategories {
+  Id          String   @id @default(uuid()) @db.Uuid
+  Name        String   @db.VarChar(255)
+  Description String?  @db.VarChar(500)
+  CreatedAt   DateTime @default(now()) @db.Timestamptz(6)
+  UpdatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  CreatedById String   // Add field to track which admin created this category
+  CreatedBy   User     @relation(fields: [CreatedById], references: [id], onDelete: Cascade) // Relation to User model
+  Stores      Stores[]
+
+  @@index([CreatedById], map: "IX_StoreCategories_CreatedById")
 }
 
 enum UserRole {

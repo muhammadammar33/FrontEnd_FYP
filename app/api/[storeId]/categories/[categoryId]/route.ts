@@ -16,9 +16,6 @@ export async function GET (
             where: {
                 Id: categoryId,
             },
-            include: {
-                Billboards: true
-            }
         })
 
         return NextResponse.json(category);
@@ -48,9 +45,9 @@ export async function PATCH (
             return new NextResponse("Name is required", { status: 400 });
         }
 
-        if (!BillBoardId) {
-            return new NextResponse("Billboard URL is required", { status: 400 });
-        }
+        // if (!BillBoardId) {
+        //     return new NextResponse("Billboard URL is required", { status: 400 });
+        // }
 
         if(!categoryId) {
             return new NextResponse("Category id is required", { status: 400 });
@@ -73,7 +70,6 @@ export async function PATCH (
             },
             data: {
                 Name,
-                BillBoardId,
             }
         })
 

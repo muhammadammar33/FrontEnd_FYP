@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Stores } from "@/types";
 import axios from "axios";
+import Image from "next/image"
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface ProductCardProps {
     data: Stores;
@@ -10,6 +12,7 @@ interface ProductCardProps {
 
 const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
     const router = useRouter();
+    const user = useCurrentUser();
 
     const handleClick = () => {
         router.push(`/store/${data.id}`);
@@ -70,28 +73,30 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
     };
 
     return (
-        <div onClick={handleClick} className="p-3 space-y-4 bg-white border rounded-xl">
+        <div onClick={handleClick} className="p-3 space-y-4 bg-gradient-to-r from-black/70 to-transparent border rounded-xl cursor-pointer">
         {/* Images and Actions */}
         <div className="relative bg-gray-100 aspect-square rounded-xl">
-            {/* <Image
+            <Image
             fill
-            src={data.billboards.imageUrl}
+            src="/images/store.png"
             alt="Images"
             className="object-cover rounded-md aspect-square"
-            /> */}
+            />
         </div>
 
         {/* Description */}
         <div>
             <div className="flex items-center justify-between">
             <p className="text-lg font-semibold">{data.name}</p>
-            <p className="text-sm text-gray-500">{data.status}</p>
+            {user?.role === "ADMIN" && (
+                <p className="text-sm text-gray-500">{data.status}</p>
+            )}
             </div>
             <p className="text-sm text-gray-500">{data.description}</p>
         </div>
 
         {/* Approve Button */}
-        {data.status === "PENDING" && (
+        {user.role === "ADMIN" && data.status === "PENDING" && (
             <button
                 onClick={(e) => {
                     e.stopPropagation(); // Prevent the parent onClick from firing
@@ -102,7 +107,7 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
                 Approve
             </button>
         )}
-        {data.status === "ARCHIVED" && (
+        {user.role === "ADMIN" && data.status === "ARCHIVED" && (
             <button
                 onClick={(e) => {
                     e.stopPropagation(); // Prevent the parent onClick from firing
@@ -113,7 +118,7 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
                 UnArchive
             </button>
         )}
-        {data.status === "APPROVED" && (
+        {user.role === "ADMIN" && data.status === "APPROVED" && (
             <button
                 onClick={(e) => {
                     e.stopPropagation(); // Prevent the parent onClick from firing

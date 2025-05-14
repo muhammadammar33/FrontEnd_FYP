@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import * as z from 'zod'
-import { Billboards, Categories } from "@prisma/client";
+import { Categories } from "@prisma/client";
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Trash } from "lucide-react";
+import { Trash, ArrowLeft } from "lucide-react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,21 +15,19 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { AlertModal } from '@/components/modals/alert-modal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Link from "next/link"
 
 interface SettingsFromProps {
     initialData: Categories | null;
-    billboards: Billboards[];
 }
 
 const formSchema = z.object({
     Name: z.string().min(1),
-    BillboardId: z.string().min(1),
 })
 
 type CategoryFormValues = z.infer<typeof formSchema>;
 
-export const CategoryForm: React.FC<SettingsFromProps> = ({ initialData, billboards }) => {
+export const CategoryForm: React.FC<SettingsFromProps> = ({ initialData }) => {
 
     const params = useParams();
     const router = useRouter();
@@ -46,7 +44,6 @@ export const CategoryForm: React.FC<SettingsFromProps> = ({ initialData, billboa
         resolver: zodResolver(formSchema),
         defaultValues: initialData || {
             Name: '',
-            BillboardId: ''
         }
     });
 
@@ -93,10 +90,20 @@ export const CategoryForm: React.FC<SettingsFromProps> = ({ initialData, billboa
             loading={loading}
             />
             <div className="flex items-center justify-between">
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={`/seller/${params.storeId}?tab=categories`}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Categories
+                    </Link>
+                </Button>
+                
+            </div>
+            <div className="flex items-center justify-between">
                 <Heading title={title} description={description} />
                 {initialData && (
                     <Button variant="destructive" size="sm" onClick={() => setOpen(true)} disabled={loading}>
-                        <Trash className="w-4 h-4" />
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete Category
                     </Button>
                 )}
             </div>
@@ -113,38 +120,6 @@ export const CategoryForm: React.FC<SettingsFromProps> = ({ initialData, billboa
                                     <FormControl>
                                         <Input disabled={loading} placeholder='Category name' {...field} />
                                     </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control} 
-                            name="BillboardId"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Billboard</FormLabel>
-                                    <Select
-                                        disabled={loading}
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue
-                                                    defaultValue={field.value}
-                                                    placeholder='Select a billboard'
-                                                />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {billboards.map(billboard => (
-                                                <SelectItem key={billboard.Id} value={billboard.Id}>
-                                                    {billboard.Label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

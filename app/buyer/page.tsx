@@ -5,14 +5,32 @@ import CategorySection from "@/components/buyer/category-section"
 import FeaturedProducts from "@/components/buyer/featured-products"
 import NewArrivals from "@/components/buyer/new-arrivals"
 import Newsletter from "@/components/buyer/newsletter"
+import StoreList from "../(protected)/_components/store-list";
+import { db } from "@/lib/db";
+import { Billboard, Stores } from "@/types";
 
-export default function BuyerHomePage() {
+export default async function BuyerHomePage() {
+
+    const stores = (await db.stores.findMany()).map(store => ({
+        id: store.Id,
+        name: store.Name,
+        description: store.Description,
+        status: store.Status,
+        createdAt: store.CreatedAt,
+        updatedAt: store.UpdatedAt,
+        userId: store.UserId,
+        reason: store.Reason,
+    }));
     return (
         <div className="flex flex-col min-h-screen">
         <HeroSection />
 
         <div className="container mx-auto px-4 py-8 space-y-12">
             <CategorySection />
+
+            <div className="flex flex-col px-4 gap-y-8 sm:px-6 lg:px-8 bg-gradient-to-r from-black/70 to-transparent">
+                <StoreList title="All Stores" items={stores} />
+            </div>
 
             <FeaturedProducts />
 

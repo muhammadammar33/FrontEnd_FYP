@@ -33,11 +33,11 @@ export default function CheckoutPage() {
 
         // Clear cart and redirect to success page
         clearCart()
-        router.push("/checkout/success")
+        router.push("/buyer/checkout/success")
     }
 
     if (cart.length === 0) {
-        router.push("/cart")
+        router.push("/buyer/cart")
         return null
     }
 
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-between">
                     <Button variant="outline" asChild>
-                    <Link href="/cart">Back to Cart</Link>
+                    <Link href="/buyer/cart">Back to Cart</Link>
                     </Button>
                     <Button type="submit" disabled={loading}>
                     {loading ? "Processing..." : "Place Order"}

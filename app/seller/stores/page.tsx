@@ -6,22 +6,33 @@ import { BackButton } from "@/components/auth/back-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import toast from "react-hot-toast";
 import { useParams, useRouter } from "next/navigation";
+import ImageUpload from "@/components/ui/image-upload";
 
 interface Store {
-  id: number;
+  id: string;
   name: string;
   description: string;
+  storeCategoryId: string;
+  imageUrl: string;
   userId: String;
   createdDate: string;
 }
 
+interface StoreCategory {
+  Id: string;  
+  Name: string; 
+  Description?: string;
+}
+
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
+  const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [modalStore, setModalStore] = useState<Store | null>(null); // Store data for create/edit
-  const [isEdit, setIsEdit] = useState(false); // Determine if we're editing or creating
-  const [modalOpen, setModalOpen] = useState(false);
+  const [storeName, setStoreName] = useState("");
+  const [storeDescription, setStoreDescription] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   const user = useCurrentUser();
   const router = useRouter();
@@ -30,7 +41,7 @@ export default function StoresPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.get("http://localhost:5028/api/Store");
+      const response = await axios.get("http://localhost:5028/api/Shops");
       setStores(response.data);
     } catch (err) {
       setError("Failed to fetch stores.");
@@ -39,7 +50,17 @@ export default function StoresPage() {
     setLoading(false);
   };
 
-  const deleteStore = async (id: number) => {
+  const fetchStoreCategories = async () => {
+    try {
+      const response = await axios.get("/api/admin/store-categories");
+      console.log("Store categories response:", response.data); // Add logging to debug
+      setStoreCategories(response.data);
+    } catch (err) {
+      console.error("Failed to fetch store categories:", err);
+    }
+  };
+
+  const deleteStore = async (id: string) => {
     try {
       await axios.delete(`http://localhost:5028/api/Store/${id}`);
       setStores(stores.filter((store) => store.id !== id));
@@ -49,167 +70,127 @@ export default function StoresPage() {
     }
   }
 
-  const handleSave = async () => {
-    if (!modalStore?.name || !modalStore.description) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Current user:", user);
+    
+    if (!storeName || !storeDescription) {
       toast.error("Name and description are required!");
       return;
     }
-
+  
+    const payload = {
+      Name: storeName,
+      Description: storeDescription,
+      StoreCategoryId: selectedCategoryId || null,
+      ImageUrl: imageUrl
+    };
+    
+    console.log("Sending payload to API route:", payload);
+  
     try {
-    if (isEdit) {
-        // Update Store
-        await axios.put(`http://localhost:5028/api/Store/${modalStore.id}`, {
-            id: modalStore.id,
-            name: modalStore.name,
-            description: modalStore.description,
-        });
-        toast.success("Store updated successfully.");
-        } else {
-          // Create Store
-          const response = await axios.post("http://localhost:5028/api/Store", {
-              Name: modalStore.name,
-              Description: modalStore.description,
-              UserId: user?.id
-          });
-          toast.success("Store created successfully.");
-          setStores((prev) => [...prev, response.data]);
-          window.location.assign(`/seller/${response.data.id}`);
-        }
-      setModalOpen(false);
-      setModalStore(null);
+      const response = await axios.post("/api/shops", payload);
+      toast.success("Store created successfully.");
+      
+      setStores((prev) => [...prev, response.data]);
+      
+      window.location.assign(`/seller/${response.data.Id}`);
+      
+      // Clear form
+      setStoreName("");
+      setStoreDescription("");
+      setSelectedCategoryId("");
+      setImageUrl("");
     } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error("Error details:", err.response?.data);
+        console.error("Error status:", err.response?.status);
+      } else {
+        console.error("An unexpected error occurred:", err);
+      }
       toast.error("Failed to save the store.");
     }
   };
 
-  const openCreateModal = () => {
-    setIsEdit(false);
-    setModalStore({ id: 0, name: "", description: "", userId: "", createdDate: "" });
-    setModalOpen(true);
-  };
-
-  const openEditModal = (store: Store) => {
-    setIsEdit(true);
-    setModalStore({ ...store });
-    setModalOpen(true);
-  };
-
   useEffect(() => {
     fetchStores();
+    fetchStoreCategories();
   }, []);
 
   return (
     <div className="py-10 px-4">
-      {/* <div className="max-w-4xl mx-auto"> */}
-
-        <div className="flex justify-center items-center mb-4 w-full">
-          {/* <div>
-            <BackButton label="Back to Dashboard" href="/seller" />
-          </div> */}
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-            onClick={openCreateModal}
-          >
-            + Create New Store
-          </button>
-        </div>
-
-        {/* <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {stores.length > 0 ? (
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-6 py-3 font-medium text-gray-500">Name</th>
-                  <th className="text-left px-6 py-3 font-medium text-gray-500">Description</th>
-                  <th className="text-left px-6 py-3 font-medium text-gray-500">User</th>
-                  <th className="text-left px-6 py-3 font-medium text-gray-500">Created Date</th>
-                  <th className="text-center px-6 py-3 font-medium text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stores.filter((store) => store.userId === user.id).map((store) => (
-                  <tr key={store.id} className="border-t">
-                    <td className="px-6 py-4 text-gray-800">{store.name}</td>
-                    <td className="px-6 py-4 text-gray-600">{store.description}</td>
-                    <td className="px-6 py-4 text-gray-600">{store.userId}</td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {new Date(store.createdDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-center space-x-2">
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                        onClick={() => openEditModal(store)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                        onClick={() => deleteStore(store.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-center text-gray-600 py-6">No stores available.</p>
-          )}
-        </div>
-      </div> */}
-
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center">
-          <div className="bg-black p-6 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {isEdit ? "Edit Store" : "Create Store"}
-            </h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                placeholder="Store Name"
-                type="text"
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
-                value={modalStore?.name || ""}
-                onChange={(e) =>
-                  setModalStore((prev) => prev && { ...prev, name: e.target.value })
-                }
+      <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-bold mb-4 text-gray-700">Create a New Store</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Store Name</label>
+            <input
+              placeholder="Enter store name"
+              type="text"
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="store-category" className="block text-sm font-medium text-gray-700">
+              Store Category
+            </label>
+            <select
+              id="store-category"
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+            >
+              <option value="">Select a category (optional)</option>
+              {storeCategories && storeCategories.length > 0 ? (
+                storeCategories.map(category => (
+                  <option key={category.Id} value={category.Id}>
+                    {category.Name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No categories available</option>
+              )}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Store Description
+            </label>
+            <textarea
+              placeholder="Enter store description"
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
+              value={storeDescription}
+              onChange={(e) => setStoreDescription(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Store Image
+            </label>
+            <div className="mt-1">
+              <ImageUpload
+                value={imageUrl ? [imageUrl] : []}
+                disabled={loading}
+                onChange={(url) => setImageUrl(url)}
+                onRemove={() => setImageUrl("")}
               />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                placeholder="Store Description"
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
-                value={modalStore?.description || ""}
-                onChange={(e) =>
-                  setModalStore((prev) => prev && { ...prev, description: e.target.value })
-                }
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
-                onClick={() => setModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => {
-                  handleSave();
-                }}
-              >
-                Save
-              </button>
             </div>
           </div>
-        </div>
-      )}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Store"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

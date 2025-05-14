@@ -3,7 +3,6 @@
 import * as z from "zod";
 import bcrypt from "bcryptjs";
 
-// import { update } from "@/auth";
 import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
 import { getUserbyEmail, getUserbyId } from "@/data/user";
@@ -12,16 +11,60 @@ import { currentRole } from "@/lib/auth";
 import { generateVerificationToken } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/mail";
 
-export const settings = async (
-    values: z.infer<typeof SettingsSchema>
-) => {
+// Define schema as a regular variable, not as an export
+const SellerSettingsSchema = z.object({
+    name: z.string().optional(),
+});
+
+export async function sellerSettings(values: z.infer<typeof SellerSettingsSchema>) {
     const user = await currentUser();
 
     if (!user) {
-        return { error: "Unauthorized" }
+        return { error: "Unauthorized" };
+    }
+
+    const role = await currentRole();
+
+    if (role !== "SELLER") {
+        return { error: "Unauthorized - Seller role required" };
+    }
+
+    const dbUser = await getUserbyId(user.id);
+
+    if (!dbUser) {
+        return { error: "User not found" };
+    }
+
+    // Update the user in the database
+    const updatedUser = await db.user.update({
+        where: { id: dbUser.id },
+        data: {
+        ...values,
+        }
+    });
+
+    return { success: "Settings updated!" };
+}
+
+export async function settings(values: z.infer<typeof SettingsSchema>) {
+    const user = await currentUser();
+
+    if (!user) {
+        return { error: "Unauthorized" };
     }
 
     const Role = await currentRole();
+
+    if (Role === "SELLER") {
+        const { name } = values;
+        
+        const updatedUser = await db.user.update({
+        where: { id: user.id },
+        data: { name }
+        });
+        
+        return { success: "Profile updated!" };
+    }
 
     if (Role !== "BUYER") {
         return { error: "Unauthorized" }
