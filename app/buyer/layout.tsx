@@ -26,7 +26,7 @@ export default function BuyerLayout({
                 <div className="flex flex-col min-h-screen">
                 <BuyerNavbar />
                 <main className="flex-1">{children}</main>
-                <BuyerFooter />
+                {/* <BuyerFooter /> */}
                 </div>
             </CartProvider>
             </ThemeProvider>

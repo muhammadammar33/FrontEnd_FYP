@@ -403,7 +403,7 @@ export default function Chat() {
                                     <BiArrowBack size={20} />
                                 </button>
 
-                                <div className="h-10 w-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                <div className="h-10 w-10 rounded-full bg-gray-800 mr-3 overflow-hidden">
                                     {getOtherParticipant(selectedConversation)?.image ? (
                                         <Image
                                             src={getOtherParticipant(selectedConversation)!.image!}
@@ -412,7 +412,7 @@ export default function Chat() {
                                             height={40}
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-500">
+                                        <div className="h-full w-full flex items-center justify-center text-gray-800">
                                             {getOtherParticipant(selectedConversation)?.name?.[0] ||
                                                 getOtherParticipant(selectedConversation)?.email[0].toUpperCase()}
                                         </div>

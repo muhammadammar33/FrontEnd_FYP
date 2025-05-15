@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart3, Box, Home, LayoutDashboard, Book, Palette, Package, Settings, ShoppingCart, ChartColumnStacked, Users } from "lucide-react"
+import { BarChart3, Box, Home, LayoutDashboard, MessageSquare, Book, Palette, Package, Settings, ShoppingCart, ChartColumnStacked, Users } from "lucide-react"
 import {
     SidebarProvider,
     Sidebar,
@@ -172,6 +172,13 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
+                    <SidebarMenuButton isActive={activeTab === "chat"} onClick={() => setActiveTab("chat")}>
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Chat</span>
+                    {/* <Badge className="ml-auto">{}</Badge> */}
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
                     <SidebarMenuButton isActive={activeTab === "analytics"} onClick={() => setActiveTab("analytics")}>
                     <BarChart3 className="h-4 w-4" />
                     <span>Analytics</span>
@@ -242,6 +249,7 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                     {activeTab === "categories" && "Categories Management"}
                     {activeTab === "colors" && "Colors Management"}
                     {activeTab === "billboards" && "Billboards Management"}
+                    {activeTab === "chat" && "Chat"}
                     {activeTab === "analytics" && "Analytics & Reports"}
                     {activeTab === "customers" && "Customer Management"}
                     {activeTab === "settings" && "Account Settings"}
