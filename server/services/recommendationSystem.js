@@ -1,73 +1,10 @@
-import { MongoClient } from "mongodb";
 import { getTextEmbeddings, getImageEmbeddings } from "./createEmbeddings.js";
 import { PrismaClient } from "@prisma/client";
-
+import { collection } from "../app.js";
 const prisma = new PrismaClient();
-const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017";
-const dbName = "ProductVector";
-const collectionName = "Embedding";
-
-let mongoClient;
-let collection;
-
-async function connectToMongoDB() {
-  if (!mongoClient) {
-    mongoClient = new MongoClient(mongoUri);
-    await mongoClient.connect();
-    console.log("Connected to MongoDB");
-
-    const db = mongoClient.db(dbName);
-    collection = db.collection(collectionName);
-
-    const indexes = await collection.listIndexes().toArray();
-
-    const hasTextEmbeddingIndex = indexes.some(
-      (index) => index.name === "text_embeddings_vector_index"
-    );
-
-    if (!hasTextEmbeddingIndex) {
-      await collection.createIndex(
-        { text_embeddings: "vector" },
-        {
-          name: "text_embeddings_vector_index",
-          vectorSize: 768,
-        }
-      );
-      console.log("Created text embeddings vector index");
-    }
-
-    const hasImageEmbeddingIndex = indexes.some(
-      (index) => index.name === "image_embeddings_vector_index"
-    );
-
-    if (!hasImageEmbeddingIndex) {
-      await collection.createIndex(
-        { image_embeddings: "vector" },
-        {
-          name: "image_embeddings_vector_index",
-          vectorSize: 768,
-        }
-      );
-      console.log("Created image embeddings vector index");
-    }
-  }
-
-  return { client: mongoClient, collection };
-}
-
-async function closeMongoDB() {
-  if (mongoClient) {
-    await mongoClient.close();
-    mongoClient = null;
-    collection = null;
-    console.log("Disconnected from MongoDB");
-  }
-}
 
 async function findSimilarProductsByImage(imageUrl, limit = 5, minScore = 0.5) {
   try {
-    await connectToMongoDB();
-
     const imageEmbeddings = await getImageEmbeddings(imageUrl);
     const similarProducts = await collection
       .aggregate([
@@ -105,8 +42,6 @@ async function findSimilarProductsByImage(imageUrl, limit = 5, minScore = 0.5) {
 
 async function findSimilarProductsByText(textQuery, limit = 5, minScore = 0.5) {
   try {
-    await connectToMongoDB();
-
     const textEmbeddings = await getTextEmbeddings(textQuery);
     const similarProducts = await collection
       .aggregate([
@@ -148,8 +83,6 @@ async function findSimilarProductsByProductId(
   minScore = 0.5
 ) {
   try {
-    await connectToMongoDB();
-
     const product = await prisma.products.findUnique({
       where: { Id: productId },
     });
