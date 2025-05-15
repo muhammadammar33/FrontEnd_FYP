@@ -132,8 +132,6 @@ async function findSimilarProductsByProductId(
 }
 
 export {
-  connectToMongoDB,
-  closeMongoDB,
   findSimilarProductsByImage,
   findSimilarProductsByText,
   findSimilarProductsByProductId,

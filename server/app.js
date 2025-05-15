@@ -6,9 +6,15 @@ import recommendationRouter from "./routes/recommendationRoutes.js";
 const app = express();
 
 app.use(express.json());
-app.use("recommendations", recommendationRouter);
+app.use("/recommendations", recommendationRouter);
+app.use("/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Server is running",
+  });
+});
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3002;
 const mongoUri =
   "mongodb+srv://aabmehraj:vectordb@cluster0.pzfgnru.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const dbName = "ProductVector";
@@ -56,7 +62,7 @@ initializeModels()
   });
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running at http://127.0.0.1:${PORT}`);
 });
 
 export { mongoClient, collection, connectToMongoDB, closeMongoDB };
