@@ -347,11 +347,11 @@ export default function Chat() {
                                     <div
                                         key={conversation.id}
                                         onClick={() => setSelectedConversation(conversation)}
-                                        className={`p-4 border-b flex items-center hover:bg-gray-50 cursor-pointer ${selectedConversation?.id === conversation.id ? 'bg-gray-100' : ''
+                                        className={`p-4 border-b flex items-center hover:bg-gray-50 text-black cursor-pointer ${selectedConversation?.id === conversation.id ? 'bg-gray-100' : ''
                                             }`}
                                     >
                                         {/* Avatar */}
-                                        <div className="relative h-12 w-12 rounded-full bg-gray-300 mr-4 overflow-hidden">
+                                        <div className="relative h-12 w-12 rounded-full bg-gray-200 text-emerald-800 mr-4 overflow-hidden">
                                             {otherUser?.image ? (
                                                 <Image
                                                     src={otherUser.image}
@@ -360,7 +360,7 @@ export default function Chat() {
                                                     className="object-cover"
                                                 />
                                             ) : (
-                                                <div className="h-full w-full flex items-center justify-center text-gray-500 text-xl">
+                                                <div className="h-full w-full flex items-center text-emerald-800 justify-center text-xl">
                                                     {otherUser?.name?.[0] || otherUser?.email[0].toUpperCase()}
                                                 </div>
                                             )}
@@ -399,6 +399,8 @@ export default function Chat() {
                                 <button
                                     className="md:hidden mr-3 p-1 rounded-full hover:bg-emerald-700"
                                     onClick={() => setSelectedConversation(null)}
+                                    title="Go back"
+                                    aria-label="Go back"
                                 >
                                     <BiArrowBack size={20} />
                                 </button>

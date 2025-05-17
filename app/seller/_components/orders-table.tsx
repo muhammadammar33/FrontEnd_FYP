@@ -87,7 +87,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
             if (response.data.success) {
                 toast.success(response.data.message);
                 // Optionally navigate to the conversation
-                router.push(`/seller/chat`);
+                router.push(`/seller/${params.storeId}?tab=chat`);
             }
         } catch (error) {
             console.error("Error creating conversation:", error);

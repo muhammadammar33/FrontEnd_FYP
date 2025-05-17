@@ -45,6 +45,7 @@ export interface Stores {
     name: string;
     description: string;
     status: string;
+    imageUrl: string;
     // billboards: Billboard;
     // products: Product[];
     // categories: Category[];

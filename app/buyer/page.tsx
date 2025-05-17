@@ -16,6 +16,7 @@ export default async function BuyerHomePage() {
         name: store.Name,
         description: store.Description,
         status: store.Status,
+        imageUrl: store.ImageUrl,
         createdAt: store.CreatedAt,
         updatedAt: store.UpdatedAt,
         userId: store.UserId,

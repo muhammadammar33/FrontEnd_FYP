@@ -23,7 +23,7 @@ export default function ChatbotPage() {
       const data = await response.json();
 
       // Add chatbot response to chat history
-      setChatHistory((prev) => [...prev, { sender: "Gemini", message: data.response }]);
+      setChatHistory((prev) => [...prev, { sender: "Elaichi", message: data.response }]);
     } catch (error) {
       console.error("Error communicating with the chatbot:", error);
       setChatHistory((prev) => [

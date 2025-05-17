@@ -72,13 +72,23 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
         }
     };
 
+    const truncateCharacters = (text: string, maxChars: number): string => {
+        // If the text is shorter than the limit, return the full text
+        if (text.length <= maxChars) {
+            return text;
+        }
+    
+        // Otherwise, truncate the text and add an ellipsis
+        return text.slice(0, maxChars) + '...';
+    };
+
     return (
         <div onClick={handleClick} className="p-3 space-y-4 bg-gradient-to-r from-black/70 to-transparent border rounded-xl cursor-pointer">
         {/* Images and Actions */}
         <div className="relative bg-gray-100 aspect-square rounded-xl">
             <Image
             fill
-            src="/images/store.png"
+            src={data.imageUrl}
             alt="Images"
             className="object-cover rounded-md aspect-square"
             />
@@ -92,7 +102,7 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
                 <p className="text-sm text-gray-500">{data.status}</p>
             )}
             </div>
-            <p className="text-sm text-gray-500">{data.description}</p>
+            <p className="text-sm text-gray-500">{truncateCharacters(data.description, 40)}</p>
         </div>
 
         {/* Approve Button */}
