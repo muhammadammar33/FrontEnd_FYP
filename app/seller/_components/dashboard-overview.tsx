@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatter } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Overview } from "@/components/ui/overview";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface DashboardOverviewProps {
     storeId: string;
@@ -20,6 +22,66 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
     const [productCount, setProductCount] = useState<number | null>(null);
     const [graphRevenue, setGraphRevenue] = useState<any[] | null>(null);
     const [buyerCount, setBuyerCount] = useState<any[] | null>(null);
+    const [salesData, setSalesData] = useState<any[]>([]);
+    const [totalSales, setTotalSales] = useState<number>(0);
+    const [loading, setLoading] = useState(false);
+    const [recentSales, setRecentSales] = useState<any[]>([]);
+    const [loadingRecentSales, setLoadingRecentSales] = useState(false);
+    const [inventoryStatus, setInventoryStatus] = useState<any[]>([]);
+    const [loadingInventory, setLoadingInventory] = useState(false);
+
+    const fetchInventoryStatus = async () => {
+        setLoadingInventory(true);
+        try {
+        const response = await fetch(`/api/${storeId}/dashboard/inventory`);
+        const data = await response.json();
+        setInventoryStatus(data.inventoryStatus || []);
+        } catch (error) {
+        console.error("Error fetching inventory status:", error);
+        } finally {
+        setLoadingInventory(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInventoryStatus();
+    }, [storeId]);
+
+    const fetchRecentSales = async () => {
+        console.log(`fetchRecentSales invoked with storeId: ${storeId}`); // Debugging log
+        setLoadingRecentSales(true);
+        try {
+        const response = await fetch(`/api/${storeId}/dashboard/recentsales`);
+        const data = await response.json();
+        setRecentSales(data.recentSales || []);
+        } catch (error) {
+        console.error("Error fetching recent sales:", error);
+        } finally {
+        setLoadingRecentSales(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRecentSales();
+    }, [storeId]);
+
+    const fetchSalesData = async (period: string) => {
+        setLoading(true);
+        try {
+        const response = await fetch(`/api/${storeId}/dashboard/sales?period=${period}`);
+        const data = await response.json();
+        setSalesData(data.salesData || []);
+        setTotalSales(data.totalSales || 0);
+        } catch (error) {
+        console.error("Error fetching sales data:", error);
+        } finally {
+        setLoading(false);
+        }
+    };
+        useEffect(() => {
+        fetchSalesData("weekly"); // Default to weekly sales on initial load
+    }, [storeId]);
+
 
     useEffect(() => {
         fetch(`/api/${storeId}/dashboard/revenue`)
@@ -66,7 +128,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         .catch(error => console.error("Error fetching graph revenue:", error));
     }, [storeId]);
 
-        // Fetch buyer count
+    // Fetch buyer count
   useEffect(() => {
     fetch(`/api/${storeId}/dashboard/buyer-count`)
       .then((res) => res.json())
@@ -75,6 +137,26 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
       })
       .catch((error) => console.error("Error fetching buyer count:", error));
   }, [storeId]);
+
+  // Function to download the report as a PDF    
+        const downloadPDF = () => {
+        const doc = new jsPDF();
+
+        doc.text("Sales Report", 14, 16);
+
+        autoTable(doc, {
+            startY: 20,
+            head: [["Order ID", "Order Date", "Product Name"]],
+            body: salesData.map((sale) => [
+                sale.Id,
+                new Date(sale.CreatedAt).toLocaleDateString(),
+                sale.OrderItem?.[0]?.Products?.Name || "N/A",
+            ]),
+        });
+
+        doc.save("sales-report.pdf");
+    };
+
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -181,7 +263,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
             <CardDescription>View your sales performance across different time periods</CardDescription>
             </CardHeader>
             <CardContent>
-            <Tabs defaultValue="weekly">
+            <Tabs defaultValue="weekly" onValueChange={(value) => fetchSalesData(value)}>
                 <div className="flex items-center justify-between">
                 <TabsList>
                     <TabsTrigger value="daily">Daily</TabsTrigger>
@@ -190,73 +272,220 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                     <TabsTrigger value="yearly">Yearly</TabsTrigger>
                 </TabsList>
                 <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={downloadPDF}>
                     Download Report
                     </Button>
                 </div>
                 </div>
                 <TabsContent value="daily" className="space-y-4">
                 <div className="h-[300px] w-full rounded-lg border bg-muted/20 p-6">
+                  {loading ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Daily sales chart will appear here</p>
+                    <p className="text-sm text-muted-foreground">Loading daily sales...</p>
                     </div>
-                </div>
+                ) : (
+                    <div>
+                            <p className="text-lg font-bold mb-4">Total Sales: ${totalSales.toFixed(2)}</p>
+                            <div className="overflow-auto">
+                            <table id="sales-table" className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order ID</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order Date</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Product Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {salesData.map((sale) => {
+                                    const saleDate = new Date(sale.CreatedAt); // Parse the createdAt field
+                                    return (
+                                    <tr key={sale.Id}>
+                                        <td className="border border-gray-300 px-4 py-2">{sale.Id}</td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {isNaN(saleDate.getTime()) ? "Invalid Date" : saleDate.toLocaleDateString()}
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {sale.OrderItem?.[0]?.Products?.Name || "N/A"}
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                  )}
+                    </div>
                 </TabsContent>
+
                 <TabsContent value="weekly" className="space-y-4">
                 <div className="h-[300px] w-full rounded-lg border bg-muted/20 p-6">
+                    {loading ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Weekly sales chart will appear here</p>
+                    <p className="text-sm text-muted-foreground">Loading weekly sales...</p>
                     </div>
-                </div>
+                    ) : (
+                    <div>
+                            <p className="text-lg font-bold mb-4">Total Sales: ${totalSales.toFixed(2)}</p>
+                            <div className="overflow-auto">
+                            <table id="sales-table" className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order ID</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order Date</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Product Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {salesData.map((sale) => {
+                                    const saleDate = new Date(sale.CreatedAt); // Parse the createdAt field
+                                    return (
+                                    <tr key={sale.Id}>
+                                        <td className="border border-gray-300 px-4 py-2">{sale.Id}</td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {isNaN(saleDate.getTime()) ? "Invalid Date" : saleDate.toLocaleDateString()}
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {sale.OrderItem?.[0]?.Products?.Name || "N/A"}
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                    )}
+                    </div>
                 </TabsContent>
+
                 <TabsContent value="monthly" className="space-y-4">
                 <div className="h-[300px] w-full rounded-lg border bg-muted/20 p-6">
+                {loading ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Monthly sales chart will appear here</p>
+                    <p className="text-sm text-muted-foreground">Loading monthly sales...</p>
                     </div>
-                </div>
+                    ) : (
+                        <div>
+                            <p className="text-lg font-bold mb-4">Total Sales: ${totalSales.toFixed(2)}</p>
+                            <div className="overflow-auto">
+                            <table id="sales-table" className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order ID</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order Date</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Product Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {salesData.map((sale) => {
+                                    const saleDate = new Date(sale.CreatedAt); // Parse the createdAt field
+                                    return (
+                                    <tr key={sale.Id}>
+                                        <td className="border border-gray-300 px-4 py-2">{sale.Id}</td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {isNaN(saleDate.getTime()) ? "Invalid Date" : saleDate.toLocaleDateString()}
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {sale.OrderItem?.[0]?.Products?.Name || "N/A"}
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                    )}
+                    </div>
                 </TabsContent>
+
                 <TabsContent value="yearly" className="space-y-4">
-                <div className="h-[300px] w-full rounded-lg border bg-muted/20 p-6">
-                    <div className="flex h-full flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Yearly sales chart will appear here</p>
+                    <div className="h-[300px] w-full rounded-lg border bg-muted/20 p-6 overflow-auto">
+                        {loading ? (
+                        <div className="flex h-full flex-col items-center justify-center">
+                            <p className="text-sm text-muted-foreground">Loading yearly sales...</p>
+                        </div>
+                        ) : (
+                        <div>
+                            <p className="text-lg font-bold mb-4">Total Sales: ${totalSales.toFixed(2)}</p>
+                            <div className="overflow-auto">
+                            <table id="sales-table" className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order ID</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Order Date</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left text-black">Product Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {salesData.map((sale) => {
+                                    const saleDate = new Date(sale.CreatedAt); // Parse the createdAt field
+                                    return (
+                                    <tr key={sale.Id}>
+                                        <td className="border border-gray-300 px-4 py-2">{sale.Id}</td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {isNaN(saleDate.getTime()) ? "Invalid Date" : saleDate.toLocaleDateString()}
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                        {sale.OrderItem?.[0]?.Products?.Name || "N/A"}
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                        )}
                     </div>
-                </div>
                 </TabsContent>
             </Tabs>
             </CardContent>
         </Card>
+
         <Card className="md:col-span-2">
-            <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-            <CardDescription>You made 265 sales this month</CardDescription>
-            </CardHeader>
-            <CardContent>
-            <div className="space-y-8">
-                {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center">
-                    <div className="mr-4 rounded-full bg-muted p-2">
-                    <CreditCard className="h-4 w-4" />
+                <CardHeader>
+                <CardTitle>Recent Sales</CardTitle>
+                <CardDescription>You made {recentSales.length} sales recently</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <div className="space-y-8">
+                    {loadingRecentSales ? (
+                    <div className="flex h-full flex-col items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Loading recent sales...</p>
                     </div>
-                    <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">Customer {i}</p>
-                    <p className="text-xs text-muted-foreground">{i % 2 === 0 ? "Credit Card" : "PayPal"}</p>
-                    </div>
-                    <div className="text-right">
-                    <p className="text-sm font-medium">+${(i * 100).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
-                    </div>
+                    ) : recentSales.length > 0 ? (
+                    recentSales.map((sale) => (
+                        <div key={sale.Id} className="flex items-center">
+                        <div className="mr-4 rounded-full bg-muted p-2">
+                            <CreditCard className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                            <p className="text-sm font-medium leading-none">{sale.user?.name || "Unknown Customer"}</p>
+                            {/* <p className="text-xs text-muted-foreground">{sale.paymentMethod || "N/A"}</p> */}
+                        </div>
+                        <div className="text-right">
+                            {/* <p className="text-sm font-medium">+${sale.totalAmount.toFixed(2)}</p> */}
+                            <p className="text-xs text-muted-foreground">
+                            {new Date(sale.CreatedAt).toLocaleDateString()}
+                            </p>
+                        </div>
+                        </div>
+                    ))
+                    ) : (
+                    <p className="text-sm text-muted-foreground">No recent sales available</p>
+                    )}
                 </div>
-                ))}
-            </div>
-            </CardContent>
-            <CardFooter>
-            <Button variant="outline" className="w-full">
-                <ArrowRightIcon className="mr-2 h-4 w-4" />
-                View All
-            </Button>
-            </CardFooter>
+                </CardContent>
+                <CardFooter>
+                <Button variant="outline" className="w-full">
+                    <ArrowRightIcon className="mr-2 h-4 w-4" />
+                    View All
+                </Button>
+                </CardFooter>
         </Card>
+        {/* Inventory Card */}
         <Card className="md:col-span-2">
             <CardHeader>
             <CardTitle>Inventory Status</CardTitle>
@@ -264,41 +493,36 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
             </CardHeader>
             <CardContent>
             <div className="space-y-4">
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="font-medium">T-Shirts</div>
-                    <div className="text-muted-foreground">65% in stock</div>
+                {loadingInventory ? (
+                <div className="flex h-full flex-col items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Loading inventory...</p>
                 </div>
-                <Progress value={65} />
-                </div>
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="font-medium">Hoodies</div>
-                    <div className="text-muted-foreground">32% in stock</div>
-                </div>
-                <Progress value={32} className="bg-amber-100 [&>div]:bg-amber-600" />
-                </div>
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="font-medium">Sneakers</div>
-                    <div className="text-muted-foreground">89% in stock</div>
-                </div>
-                <Progress value={89} />
-                </div>
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="font-medium">Accessories</div>
-                    <div className="text-muted-foreground">14% in stock</div>
-                </div>
-                <Progress value={14} className="bg-red-100 [&>div]:bg-red-600" />
-                </div>
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="font-medium">Hats</div>
-                    <div className="text-muted-foreground">50% in stock</div>
-                </div>
-                <Progress value={50} />
-                </div>
+                ) : inventoryStatus.length > 0 ? (
+                inventoryStatus.map((item, index) => (
+                    <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                        <div className="font-medium">{item.categoryName}</div>
+                        <div className="text-muted-foreground">
+                        {item.stock > 0
+                            ? `${Math.min((item.stock / (item.productCount * 100)) * 100, 100).toFixed(0)}% in stock`
+                            : "Out of stock"}
+                        </div>
+                    </div>
+                    <Progress
+                        value={Math.min((item.stock / (item.productCount * 100)) * 100, 100)}
+                        className={
+                        item.stock > 50
+                            ? "bg-green-100 [&>div]:bg-green-600"
+                            : item.stock > 20
+                            ? "bg-amber-100 [&>div]:bg-amber-600"
+                            : "bg-red-100 [&>div]:bg-red-600"
+                        }
+                    />
+                    </div>
+                ))
+                ) : (
+                <p className="text-sm text-muted-foreground">No inventory data available</p>
+                )}
             </div>
             </CardContent>
             <CardFooter>
@@ -307,7 +531,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                 Manage Inventory
             </Button>
             </CardFooter>
-        </Card>
+      </Card>
         </div>
     )
 }

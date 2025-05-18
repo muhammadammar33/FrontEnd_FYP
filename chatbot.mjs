@@ -4,14 +4,13 @@ const ai = new GoogleGenAI({ apiKey: GOOGLE_GENAI_API_KEY });
 
 async function main() {
   const response = await ai.models.generateContent({
-    model: "models/gemini-1.5-flash", // Confirmed valid model
+    model: "models/gemini-1.5-flash", 
     contents: [
       {
         role: "user",
         parts: [
           {
             text: `You are a smart, friendly, and knowledgeable virtual shopping assistant for the le’Elysian eCommerce platform. Your role is to assist both buyers and sellers with product discovery, order tracking, shop inquiries, complaints, and event outfit recommendations.
-
 You should:
 - Greet users politely and maintain a helpful, respectful, and conversational tone.
 - Understand natural language questions and provide clear, concise answers.
