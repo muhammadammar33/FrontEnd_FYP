@@ -10,17 +10,12 @@ async function findSimilarProductsByImage(imageUrl, limit = 5, minScore = 0.5) {
       .aggregate([
         {
           $vectorSearch: {
-            index: "image_embeddings_vector_index",
+            index: "idx_image_embeddings",
             path: "image_embeddings",
             queryVector: imageEmbeddings,
             numCandidates: limit * 10,
             limit: limit,
             similarityMetric: "cosine",
-          },
-        },
-        {
-          $match: {
-            score: { $gte: minScore },
           },
         },
         {
@@ -47,17 +42,12 @@ async function findSimilarProductsByText(textQuery, limit = 5, minScore = 0.5) {
       .aggregate([
         {
           $vectorSearch: {
-            index: "text_embeddings_vector_index",
+            index: "idx_text_embeddings",
             path: "text_embeddings",
             queryVector: textEmbeddings,
             numCandidates: limit * 10,
             limit: limit,
             similarityMetric: "cosine",
-          },
-        },
-        {
-          $match: {
-            score: { $gte: minScore },
           },
         },
         {
@@ -87,26 +77,23 @@ async function findSimilarProductsByProductId(
       where: { Id: productId },
     });
 
+
     if (!product) {
       throw new Error(`Product with ID ${productId} not found`);
     }
 
     const textEmbeddings = await getTextEmbeddings(product.Description);
+    console.log("Description Embeddings: ", textEmbeddings);
     const similarProducts = await collection
       .aggregate([
         {
           $vectorSearch: {
-            index: "text_embeddings_vector_index",
+            index: "idx_text_embeddings",
             path: "text_embeddings",
             queryVector: textEmbeddings,
             numCandidates: limit * 10,
             limit: limit + 1,
             similarityMetric: "cosine",
-          },
-        },
-        {
-          $match: {
-            score: { $gte: minScore },
           },
         },
         {

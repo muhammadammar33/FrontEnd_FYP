@@ -75,11 +75,14 @@ export const getRecommendationsFromProductId = async (req, res) => {
     const limit = parseInt(req.query.limit) || 5;
     const minScore = parseFloat(req.query.minScore) || 0.7;
 
+    console.log("Going to fetch recommendations for productId:", productId);
     const similarProducts = await findSimilarProductsByProductId(
       productId,
       limit,
       minScore
     );
+    console.log("Fetched recommendations");
+    console.log("Similar Products: ", similarProducts);
 
     res.status(200).json({
       status: "success",
@@ -153,9 +156,25 @@ export const embedAllProducts = async (req, res) => {
 
     await collection.deleteMany({});
 
-    if (productEmbeddings.length > 0) {
-      await collection.insertMany(productEmbeddings);
-    }
+    await Promise.all(
+      productEmbeddings.map(async (productEmbedding) => {
+        await collection.updateOne(
+          { productId: productEmbedding.productId },
+          { $set: productEmbedding },
+          { upsert: true }
+        );
+      })
+    );
+    await Promise.all(
+      productEmbeddings.map(async (productEmbedding) => {
+        await prisma.products.update({
+          where: { Id: productEmbedding.productId },
+          data: {
+            embeddingId: productEmbedding.productId,
+          },
+        });
+      })
+    );
 
     res.status(200).json({
       status: "success",
@@ -177,3 +196,80 @@ export const embedAllProducts = async (req, res) => {
     await prisma.$disconnect();
   }
 };
+
+
+export const embedProductById = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await prisma.products.findUnique({
+      where: { Id: productId },
+      select: {
+        Id: true,
+        Description: true,
+        Name: true,
+        Image: {
+          select: {
+            Url: true,
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        status: "error",
+        message: "Product not found",
+      });
+    }
+
+    const imageUrl =
+      product.Image && product.Image.length > 0 ? product.Image[0].Url : null;
+
+    const textContent = [product.Name, product.Description]
+      .filter(Boolean)
+      .join(" - ");
+
+    const textEmbedding = await getTextEmbeddings(textContent);
+
+    let imageEmbedding = null;
+    if (imageUrl) {
+      try {
+        imageEmbedding = await getImageEmbeddings(imageUrl);
+      } catch (imgError) {
+        console.warn(
+          `Failed to get image embedding for product ${product.Id}: ${imgError.message}`
+        );
+      }
+    }
+
+    const productEmbedding = {
+      productId: product.Id,
+      text_embeddings: textEmbedding,
+      image_embeddings: imageEmbedding,
+      has_image: !!imageEmbedding,
+    };
+
+    await collection.updateOne(
+      { productId: product.Id },
+      { $set: productEmbedding },
+      { upsert: true }
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "Product embedded successfully",
+      data: productEmbedding,
+    });
+  } catch (error) {
+    console.error("Error embedding product:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to embed product",
+      data: error.message,
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

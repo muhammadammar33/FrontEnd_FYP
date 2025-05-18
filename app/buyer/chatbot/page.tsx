@@ -68,6 +68,11 @@ export default function ChatbotPage() {
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Type your message..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSendMessage();
+            }
+          }}
           style={{
             flex: 1,
             padding: "10px",

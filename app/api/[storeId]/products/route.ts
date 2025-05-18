@@ -97,6 +97,9 @@ export async function POST(
             }
         })
 
+        console.log("try to generate vector embeddings");
+        const recommendations = await fetch(`http://localhost:3002/recommendations/embed/${product.Id}`)
+        console.log("recommendations response", recommendations);
         return NextResponse.json(product);
 
     } catch (err) {
