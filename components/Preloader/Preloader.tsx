@@ -5,7 +5,7 @@ import Image from 'next/image';
 import BackImg from '../../public/images/mall.jpg';
 import { LoginButton } from '../auth/login-button';
 import { Button } from '../ui/button';
-import Elysian from '../../public/images/Elysian.png';
+import Elysian from '@/public/images/Ely.gif';
 
 interface PreloaderProps {
     loading: boolean;

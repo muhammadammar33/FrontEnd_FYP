@@ -10,6 +10,12 @@ export interface Category {
     storeId: string;
 }
 
+export interface StoreCategory {
+    id: string;
+    name: string;
+    description: string;
+}
+
 export interface Product {
     id: string;
     category: Category | null;

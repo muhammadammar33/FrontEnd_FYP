@@ -83,7 +83,7 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
     };
 
     return (
-        <div onClick={handleClick} className="p-3 space-y-4 bg-gradient-to-r from-black/70 to-transparent border rounded-xl cursor-pointer">
+        <div onClick={handleClick} className="p-3 space-y-4 bg-gradient-to-r from-white/70 to-sky-300 border rounded-xl cursor-pointer">
         {/* Images and Actions */}
         <div className="relative bg-gray-100 aspect-square rounded-xl">
             <Image
@@ -97,12 +97,12 @@ const StoreCard: React.FC<ProductCardProps> = ({ data }) => {
         {/* Description */}
         <div>
             <div className="flex items-center justify-between">
-            <p className="text-lg font-semibold">{data.name}</p>
+            <p className="text-lg text-black font-semibold">{data.name}</p>
             {user?.role === "ADMIN" && (
-                <p className="text-sm text-gray-500">{data.status}</p>
+                <p className="text-sm text-gray-600">{data.status}</p>
             )}
             </div>
-            <p className="text-sm text-gray-500">{truncateCharacters(data.description, 40)}</p>
+            <p className="text-sm text-gray-600">{truncateCharacters(data.description, 40)}</p>
         </div>
 
         {/* Approve Button */}

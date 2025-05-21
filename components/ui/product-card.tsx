@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
         // You can remove this if you want a normal cursor:
         className="group cursor-pointer"
         >
-        <div className="p-3 space-y-4 bg-white border rounded-xl">
+        <div className="p-3 space-y-4 bg-gradient-to-r from-white/70 to-sky-300 border rounded-xl">
             {/* Images and Actions */}
             <div className="relative bg-gray-100 aspect-square rounded-xl">
             <Image
@@ -90,20 +90,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
             </div>
 
             {/* Description */}
-            <div>
-            <div className="flex items-center justify-between">
-                <p className="text-lg font-semibold">{data.name}</p>
-                <p className="text-sm text-gray-500">{data.category?.name}</p>
-            </div>
-            <p className="text-sm text-gray-500 text-justify">
-                {truncateCharacters(data.description, 100)}
-            </p>
+            <div className="h-28 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                    <p className="text-lg text-black font-semibold truncate">{data.name}</p>
+                    <p className="text-sm text-gray-500">{data.category?.name}</p>
+                </div>
+                <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                    {truncateCharacters(data.description, 100)}
+                </p>
             </div>
 
             {/* Price */}
-            <div className="flex items-center justify-between">
-            {data.price}
-            <p>Available Stock: {data.stock}</p>
+            <div className="flex items-center justify-between mt-auto pt-2 border-t">
+                <p className="font-semibold text-black text-lg">{data.price}</p>
+                <p className="text-sm text-gray-600">Stock: {data.stock}</p>
             </div>
         </div>
         </Link>
