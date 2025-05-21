@@ -5,6 +5,10 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
   const { storeId } = params;
 
   try {
+    // Parse query parameters
+    const { searchParams } = new URL(req.url);
+    const fetchAll = searchParams.get("fetchAll") === "true"; // Check if fetchAll is true
+    
     const recentSales = await db.order.findMany({
       where: {
         StoreId: storeId,
@@ -12,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
       orderBy: {
         CreatedAt: "desc",
       },
-      take: 5,
+      take: fetchAll ? undefined : 5, // Fetch all if fetchAll is true, otherwise limit to 5
       select: {
         Id: true,
         CreatedAt: true,

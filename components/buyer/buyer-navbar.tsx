@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils"
 import { useCart } from "@/components/buyer/cart-provider"
 import { ExitIcon } from "@radix-ui/react-icons"
 import { signOut } from "next-auth/react";
+import { Video } from "lucide-react"
+import { ListItem } from "@/components/ui/list-item"
 
 export default function BuyerNavbar() {
     const [showSearchInput, setShowSearchInput] = useState(false)
@@ -166,6 +168,43 @@ export default function BuyerNavbar() {
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
                     </Link>
                     </NavigationMenuItem>
+                    {/* // Add this to your existing NavigationMenu */}
+                        <NavigationMenuItem>
+                        <NavigationMenuTrigger>
+                            <div className="flex items-center gap-2">
+                            <Search className="h-4 w-4" />
+                            Discover
+                            </div>
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                            <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                            <li className="row-span-3">
+                                <NavigationMenuLink asChild>
+                                <Link
+                                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                                    href="/buyer/recommendations"
+                                >
+                                    <div className="mb-2 mt-4 text-lg font-medium">
+                                    Smart Recommendations
+                                    </div>
+                                    <p className="text-sm leading-tight text-muted-foreground">
+                                    Get personalized product suggestions based on your style
+                                    </p>
+                                </Link>
+                                </NavigationMenuLink>
+                            </li>
+                            <ListItem href="/buyer/recommendations?type=text" title="Text Search">
+                                Find products by describing what you're looking for
+                            </ListItem>
+                            <ListItem href="/buyer/recommendations?type=image" title="Image Search">
+                                Upload an image to find similar products
+                            </ListItem>
+                            <ListItem href="/buyer/recommendations/trending" title="Trending">
+                                Discover what's popular right now
+                            </ListItem>
+                            </ul>
+                        </NavigationMenuContent>
+                        </NavigationMenuItem>
                 </NavigationMenuList>
                 </NavigationMenu>
             </nav>

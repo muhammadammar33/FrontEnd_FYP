@@ -29,6 +29,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
     const [loadingRecentSales, setLoadingRecentSales] = useState(false);
     const [inventoryStatus, setInventoryStatus] = useState<any[]>([]);
     const [loadingInventory, setLoadingInventory] = useState(false);
+    const [viewAll, setViewAll] = useState(false); // State to track "View All" mode
 
     const fetchInventoryStatus = async () => {
         setLoadingInventory(true);
@@ -47,11 +48,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         fetchInventoryStatus();
     }, [storeId]);
 
-    const fetchRecentSales = async () => {
-        console.log(`fetchRecentSales invoked with storeId: ${storeId}`); // Debugging log
+    const fetchRecentSales = async (fetchAll = false) => {
+        // console.log(`fetchRecentSales invoked with storeId: ${storeId}`); // Debugging log
         setLoadingRecentSales(true);
         try {
-        const response = await fetch(`/api/${storeId}/dashboard/recentsales`);
+        const response = await fetch(`/api/${storeId}/dashboard/recentsales${fetchAll ? "?fetchAll=true" : ""}`);
         const data = await response.json();
         setRecentSales(data.recentSales || []);
         } catch (error) {
@@ -156,7 +157,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
 
         doc.save("sales-report.pdf");
     };
-
+// Function to handle view all
+    const handleViewAllClick = () => {
+        setViewAll(true); // Set "View All" mode
+        fetchRecentSales(true); // Fetch all sales
+    };
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -445,51 +450,62 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         </Card>
 
         <Card className="md:col-span-2">
-                <CardHeader>
+            <CardHeader>
                 <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>You made {recentSales.length} sales recently</CardDescription>
-                </CardHeader>
-                <CardContent>
+                <CardDescription>
+                {viewAll
+                    ? `You have ${recentSales.length} total sales`
+                    : `You made ${recentSales.length} sales recently`}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
                 <div className="space-y-8">
-                    {loadingRecentSales ? (
+                {loadingRecentSales ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                        <p className="text-sm text-muted-foreground">Loading recent sales...</p>
+                    <p className="text-sm text-muted-foreground">Loading sales...</p>
                     </div>
-                    ) : recentSales.length > 0 ? (
+                ) : recentSales.length > 0 ? (
                     recentSales.map((sale) => (
-                        <div key={sale.Id} className="flex items-center">
+                    <div key={sale.Id} className="flex items-center">
                         <div className="mr-4 rounded-full bg-muted p-2">
-                            <CreditCard className="h-4 w-4" />
+                        <CreditCard className="h-4 w-4" />
                         </div>
                         <div className="flex-1 space-y-1">
-                            <p className="text-sm font-medium leading-none">{sale.user?.name || "Unknown Customer"}</p>
-                            {/* <p className="text-xs text-muted-foreground">{sale.paymentMethod || "N/A"}</p> */}
+                        <p className="text-sm font-medium leading-none">
+                            {sale.user?.name || "Unknown Customer"}
+                        </p>
                         </div>
                         <div className="text-right">
-                            {/* <p className="text-sm font-medium">+${sale.totalAmount.toFixed(2)}</p> */}
-                            <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                             {new Date(sale.CreatedAt).toLocaleDateString()}
-                            </p>
+                        </p>
                         </div>
-                        </div>
+                    </div>
                     ))
-                    ) : (
-                    <p className="text-sm text-muted-foreground">No recent sales available</p>
-                    )}
+                ) : (
+                    <p className="text-sm text-muted-foreground">No sales available</p>
+                )}
                 </div>
-                </CardContent>
-                <CardFooter>
-                <Button variant="outline" className="w-full">
+            </CardContent>
+            <CardFooter>
+                {!viewAll && ( // Show the button only if not in "View All" mode
+                <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleViewAllClick}
+                >
                     <ArrowRightIcon className="mr-2 h-4 w-4" />
                     View All
                 </Button>
-                </CardFooter>
-        </Card>
+                )}
+            </CardFooter>
+            </Card>
+            
         {/* Inventory Card */}
         <Card className="md:col-span-2">
             <CardHeader>
-            <CardTitle>Inventory Status</CardTitle>
-            <CardDescription>Monitor your inventory levels</CardDescription>
+                <CardTitle>Inventory Status</CardTitle>
+                <CardDescription>Monitor your inventory levels</CardDescription>
             </CardHeader>
             <CardContent>
             <div className="space-y-4">
@@ -503,13 +519,17 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                     <div className="flex items-center justify-between text-sm">
                         <div className="font-medium">{item.categoryName}</div>
                         <div className="text-muted-foreground">
-                        {item.stock > 0
-                            ? `${Math.min((item.stock / (item.productCount * 100)) * 100, 100).toFixed(0)}% in stock`
+                        {item.stock > 0 && productCount !== null
+                            ? `${Math.min((item.stock / productCount) * 100).toFixed(0)}% in stock`
                             : "Out of stock"}
                         </div>
                     </div>
                     <Progress
-                        value={Math.min((item.stock / (item.productCount * 100)) * 100, 100)}
+                        value={
+                                item.stock > 0 && productCount !== null
+                                    ? Math.min((item.stock / productCount) * 100)
+                                    : 0
+                            }
                         className={
                         item.stock > 50
                             ? "bg-green-100 [&>div]:bg-green-600"
@@ -524,6 +544,10 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
                 <p className="text-sm text-muted-foreground">No inventory data available</p>
                 )}
             </div>
+            {/* Display the product count */}
+        <div className="mt-4 text-sm text-muted-foreground">
+            Total Products: <span className="font-bold">{productCount !== null ? productCount : "Loading..."}</span>
+        </div>
             </CardContent>
             <CardFooter>
             <Button variant="outline" className="w-full">

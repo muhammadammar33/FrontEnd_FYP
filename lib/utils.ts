@@ -9,3 +9,11 @@ export const formatter = new Intl.NumberFormat("en-US", {
   style: 'currency',
   currency: "PKR"
 })
+// Date
+export const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    });
+};

@@ -38,6 +38,7 @@ import { ExitIcon } from "@radix-ui/react-icons"
 import { signOut } from "next-auth/react";
 import { useSearchParams } from "next/navigation"
 import { currentUser } from "@/lib/auth";
+import { CustomersTable } from "../_components/customertable";
 
 type ProductColumn = {
     id: string
@@ -93,11 +94,48 @@ interface SellerDashboardProps {
     billboards: BillboardColumn[]
 }
 
+type CustomerData = {
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string;
+    address: string;
+    totalOrders: number;
+    totalSpent: number;
+    lastPurchase: Date;
+    purchasedProducts: {
+        name: string;
+        price: number;
+    }[];
+}
+
 export default function SellerDashboard({ storeId, products, orders, categories, colors, billboards }: SellerDashboardProps) {
     const [activeTab, setActiveTab] = useState("overview")
     const searchParams = useSearchParams()
     const tabParam = searchParams.get('tab')
     const [user, setUser] = useState<{ name: string } | null>(null);
+    const [customers, setCustomers] = useState<CustomerData[]>([]);
+    
+    useEffect(() => {
+    const fetchCustomers = async () => {
+        try {
+            const response = await fetch(`/api/${storeId}/dashboard/Buyer-data`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                setCustomers(result.data);
+            } else {
+                console.error("Failed to fetch customers: Invalid data structure");
+            }
+        } catch (error) {
+            console.error("Failed to fetch customers:", error);
+        }
+    };
+
+    if (activeTab === "customers") {
+        fetchCustomers();
+    }
+}, [activeTab, storeId]);
 
     useEffect(() => {
         if (tabParam) {
@@ -279,10 +317,10 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                     <Card>
                     <CardHeader>
                         <CardTitle>Customer Management</CardTitle>
-                        <CardDescription>View and manage your customer base</CardDescription>
+                        <CardDescription>View and manage your customer base ({customers.length} customers) </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground">Customer management content will appear here.</p>
+                         <CustomersTable customers={customers} />
                     </CardContent>
                     </Card>
                 </div>
