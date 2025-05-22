@@ -216,12 +216,12 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                     {/* <Badge className="ml-auto">{}</Badge> */}
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
+                {/* <SidebarMenuItem>
                     <SidebarMenuButton isActive={activeTab === "analytics"} onClick={() => setActiveTab("analytics")}>
                     <BarChart3 className="h-4 w-4" />
                     <span>Analytics</span>
                     </SidebarMenuButton>
-                </SidebarMenuItem>
+                </SidebarMenuItem> */}
                 <SidebarMenuItem>
                     <SidebarMenuButton isActive={activeTab === "customers"} onClick={() => setActiveTab("customers")}>
                     <Users className="h-4 w-4" />
@@ -288,7 +288,7 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                     {activeTab === "colors" && "Colors Management"}
                     {activeTab === "billboards" && "Billboards Management"}
                     {activeTab === "chat" && "Chat"}
-                    {activeTab === "analytics" && "Analytics & Reports"}
+                    {/* {activeTab === "analytics" && "Analytics & Reports"} */}
                     {activeTab === "customers" && "Customer Management"}
                     {activeTab === "settings" && "Account Settings"}
                 </h1>
@@ -311,7 +311,7 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                 {activeTab === "categories" && <CategoriesTable categories={categories} />}
                 {activeTab === "colors" && <ColorsTable colors={colors} />}
                 {activeTab === "billboards" && <BillboardsTable billboards={billboards} />}
-                {activeTab === "analytics" && <AnalyticsView />}
+                {/* {activeTab === "analytics" && <AnalyticsView />} */}
                 {activeTab === "customers" && (
                 <div className="grid gap-4">
                     <Card>
@@ -320,7 +320,7 @@ export default function SellerDashboard({ storeId, products, orders, categories,
                         <CardDescription>View and manage your customer base ({customers.length} customers) </CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <CustomersTable customers={customers} />
+                        <CustomersTable customers={customers} />
                     </CardContent>
                     </Card>
                 </div>

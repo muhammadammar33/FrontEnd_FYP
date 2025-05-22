@@ -1,9 +1,6 @@
 import Container from "@/components/ui/container";
-// import Billboard from "../components/billboard";
 import { db } from "@/lib/db";
 import StoreList from "../../_components/store-list";
-import { formatter } from '@/lib/utils'
-import { Billboard, Stores } from "@/types";
 
 
 const HomePage = async () => {
@@ -16,6 +13,7 @@ const HomePage = async () => {
         updatedAt: store.UpdatedAt,
         userId: store.UserId,
         reason: store.Reason,
+        imageUrl: store.ImageUrl || "",
     }));
 
     return (

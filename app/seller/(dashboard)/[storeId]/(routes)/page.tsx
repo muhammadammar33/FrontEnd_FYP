@@ -1,4 +1,3 @@
-import Navbar from "../../../_components/navbar";
 import SellerDashboard from "../../../_components/SellerDashboard";
 import { format } from 'date-fns'
 import { db } from '@/lib/db'
@@ -159,7 +158,6 @@ const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: stri
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Navbar />
             <SellerDashboard 
                 storeId={(await params).storeId} 
                 products={formattedProducts} 

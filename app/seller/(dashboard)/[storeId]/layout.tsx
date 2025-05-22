@@ -2,6 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db";
 import Starfield from 'react-starfield'
+import Navbar from "../../_components/navbar";
 
 interface DashboardType {
     children: React.ReactNode;
@@ -31,6 +32,7 @@ export default async function Dashboard({children, params}: DashboardType) {
     return (
         <>
             <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-900 to-blue-900">
+                <Navbar/>
                 {children}
                 <Starfield
                     starCount={1000}
