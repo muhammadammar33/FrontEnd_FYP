@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "react-hot-toast"
 import axios from "axios"
 import { useParams, useRouter } from "next/navigation"
@@ -227,15 +228,22 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Description</FormLabel>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
                             <FormControl>
-                            <Input disabled={loading} placeholder="Product Description" {...field} />
+                            <Textarea 
+                              disabled={loading} 
+                              placeholder="Product Description" 
+                              rows={4}
+                              className="resize-none"
+                              {...field} 
+                            />
                             </FormControl>
                             <Button
                             type="button"
                             variant="outline"
                             onClick={generateImage}
                             disabled={generatingImage || loading}
+                            className="self-end"
                             >
                             {generatingImage ? (
                                 <>

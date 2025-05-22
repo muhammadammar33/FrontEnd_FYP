@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { Overview } from "@/components/ui/overview";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Link from "next/link"
+import { useParams, useRouter } from 'next/navigation';
 
 interface DashboardOverviewProps {
     storeId: string;
@@ -30,6 +32,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
     const [inventoryStatus, setInventoryStatus] = useState<any[]>([]);
     const [loadingInventory, setLoadingInventory] = useState(false);
     const [viewAll, setViewAll] = useState(false); // State to track "View All" mode
+    const params = useParams();
 
     const fetchInventoryStatus = async () => {
         setLoadingInventory(true);
@@ -551,11 +554,12 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
             </CardContent>
             <CardFooter>
             <Button variant="outline" className="w-full">
-                <Package className="mr-2 h-4 w-4" />
-                Manage Inventory
+                <Link href={`/seller/${params.storeId}?tab=products`}>
+                    <Package className="mr-2 h-4 w-4" /> Manage Inventory
+                </Link>
             </Button>
             </CardFooter>
-      </Card>
+        </Card>
         </div>
     )
 }
