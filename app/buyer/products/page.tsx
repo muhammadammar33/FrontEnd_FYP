@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
-import { Search, SlidersHorizontal, X } from "lucide-react"
+import { Search, SlidersHorizontal, X, Sparkles } from "lucide-react"
 import ProductCard from "@/components/buyer/product-card"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { mockProducts } from "@/lib/mock-data"
+import Link from "next/link"
 
 export default function ProductsPage() {
     const [activeFilters, setActiveFilters] = useState<string[]>([])
@@ -63,6 +64,22 @@ export default function ProductsPage() {
                 priceRange={priceRange}
                 setPriceRange={setPriceRange}
             />
+            
+            {/* GRWM Button */}
+            <div className="mt-6">
+                <Button 
+                    asChild 
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                    <Link href="/buyer/grwm">
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Get Ready With Me
+                    </Link>
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Let us suggest outfit combinations for you!
+                </p>
+            </div>
             </div>
 
             {/* Main Content */}
