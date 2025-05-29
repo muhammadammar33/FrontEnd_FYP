@@ -98,7 +98,7 @@ export default function GRWMPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2 flex items-center">
+                <label className="block text-sm font-medium mb-2 items-center">
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                   Occasion
                 </label>
@@ -117,7 +117,7 @@ export default function GRWMPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-2 flex items-center">
+                <label className="block text-sm font-medium mb-2 items-center">
                   <Palette className="h-4 w-4 mr-2 text-muted-foreground" />
                   Style Preference
                 </label>
@@ -136,7 +136,7 @@ export default function GRWMPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-2 flex items-center">
+                <label className="block text-sm font-medium mb-2 items-center">
                   <Shirt className="h-4 w-4 mr-2 text-muted-foreground" />
                   Budget Range
                 </label>
