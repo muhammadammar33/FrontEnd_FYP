@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatter } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Overview } from "@/components/ui/overview";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -34,7 +34,7 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
     const [viewAll, setViewAll] = useState(false); // State to track "View All" mode
     const params = useParams();
 
-    const fetchInventoryStatus = async () => {
+    const fetchInventoryStatus = useCallback(async () => {
         setLoadingInventory(true);
         try {
         const response = await fetch(`/api/${storeId}/dashboard/inventory`);
@@ -45,13 +45,13 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         } finally {
         setLoadingInventory(false);
         }
-    };
+    }, [storeId]);
 
     useEffect(() => {
         fetchInventoryStatus();
-    }, [storeId]);
+    }, [fetchInventoryStatus]);
 
-    const fetchRecentSales = async (fetchAll = false) => {
+    const fetchRecentSales = useCallback(async (fetchAll = false) => {
         // console.log(`fetchRecentSales invoked with storeId: ${storeId}`); // Debugging log
         setLoadingRecentSales(true);
         try {
@@ -63,13 +63,13 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         } finally {
         setLoadingRecentSales(false);
         }
-    };
+    }, [storeId]);
 
     useEffect(() => {
         fetchRecentSales();
-    }, [storeId]);
+    }, [fetchRecentSales]);
 
-    const fetchSalesData = async (period: string) => {
+    const fetchSalesData = useCallback(async (period: string) => {
         setLoading(true);
         try {
         const response = await fetch(`/api/${storeId}/dashboard/sales?period=${period}`);
@@ -81,10 +81,11 @@ export default function DashboardOverview( { storeId }: DashboardOverviewProps )
         } finally {
         setLoading(false);
         }
-    };
-        useEffect(() => {
-        fetchSalesData("weekly"); // Default to weekly sales on initial load
     }, [storeId]);
+    
+    useEffect(() => {
+        fetchSalesData("weekly"); // Default to weekly sales on initial load
+    }, [fetchSalesData]);
 
 
     useEffect(() => {

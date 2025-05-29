@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,25 +57,7 @@ export default function SettingsView({ storeId }: SettingsProps) {
     const storeNameRef = useRef<HTMLInputElement>(null);
     const storeDescriptionRef = useRef<HTMLTextAreaElement>(null);
 
-    // Fetch store data when component mounts
-    useEffect(() => {
-        if (storeId) {
-            fetchStore();
-            fetchStoreCategories();
-        }
-    }, [storeId]);
-
-    // Set initial values after store data is loaded
-    useEffect(() => {
-        if (store) {
-            setSelectedCategory(store.StoreCategoryId || "");
-            setImageUrl(store.ImageUrl || "");
-            // Store is in vacation mode when status is ARCHIVED
-            setVacationMode(store.Status === "ARCHIVED");
-        }
-    }, [store]);
-
-    const fetchStore = async () => {
+    const fetchStore = useCallback(async () => {
         setIsLoading(true);
         setError("");
         try {
@@ -93,7 +75,25 @@ export default function SettingsView({ storeId }: SettingsProps) {
             console.error("Error fetching store:", err);
         }
         setIsLoading(false);
-    };
+    }, [storeId]);
+
+    // Fetch store data when component mounts
+    useEffect(() => {
+        if (storeId) {
+            fetchStore();
+            fetchStoreCategories();
+        }
+    }, [fetchStore, storeId]);
+
+    // Set initial values after store data is loaded
+    useEffect(() => {
+        if (store) {
+            setSelectedCategory(store.StoreCategoryId || "");
+            setImageUrl(store.ImageUrl || "");
+            // Store is in vacation mode when status is ARCHIVED
+            setVacationMode(store.Status === "ARCHIVED");
+        }
+    }, [store]);
 
     const fetchStoreCategories = async () => {
         try {

@@ -16,6 +16,7 @@ const HomePage = async () => {
         name: store.Name,
         description: store.Description,
         status: store.Status,
+        imageUrl: store.ImageUrl || "", // Add the required imageUrl property
         createdAt: store.CreatedAt,
         updatedAt: store.UpdatedAt,
         userId: store.UserId,

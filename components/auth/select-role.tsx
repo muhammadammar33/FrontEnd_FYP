@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { useState } from 'react';
-import { Done } from "@/components/auth/done";
+// import { Done } from "@/components/auth/done";
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import {
     Form,
@@ -18,7 +18,7 @@ import { RegisterSchema } from "@/schemas";
 import { FormError } from "@/components/form-errors/form-error";
 import { FormSuccess } from "@/components/form-success/form-success";
 import { register } from "@/actions/register";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+// import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 export const SelectRole = () => {
 
@@ -77,7 +77,7 @@ export const SelectRole = () => {
 
                         <FormError message={error}/>
                         <FormSuccess message={success}/>
-                        <Done label={"Confirm Role"} href={DEFAULT_LOGIN_REDIRECT}/>
+                        {/* <Done label={"Confirm Role"} href={DEFAULT_LOGIN_REDIRECT}/> */}
                     </div>
                 </form>
             </Form>

@@ -68,7 +68,7 @@ export const SettingsForm: React.FC<SettingsFromProps> = ({ initialData }) => {
 
     const openCreateModal = () => {
         setIsEdit(false);
-        setModalStore({ Id: "", Name: "", Description: "", UserId: "", CreatedAt: new Date(), UpdatedAt: new Date(), Reason: "", Status: "PENDING" });
+        setModalStore({ Id: "", Name: "", Description: "", UserId: "", CreatedAt: new Date(), UpdatedAt: new Date(), Reason: "", Status: "PENDING", ImageUrl: "", StoreCategoryId: null });
         setModalOpen(true);
     };
 
