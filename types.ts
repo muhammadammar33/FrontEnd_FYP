@@ -11,9 +11,11 @@ export interface Category {
 }
 
 export interface StoreCategory {
-    id: string;
+    id?: string;
     name: string;
-    description: string;
+    description?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface Product {

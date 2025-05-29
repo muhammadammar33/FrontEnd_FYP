@@ -103,7 +103,7 @@ export default function CategorySection({ categories }: CategoriesProps) {
                 >
                     {categories.map((category) => (
                         <div key={category.name} className="min-w-[330px] flex-shrink-0 snap-start px-1" style={{ width: 'calc(25% - 18px)' }}>
-                            <Link href={'/products?category=clothing'}>
+                            <Link href={`/products?category=${encodeURIComponent(category.name)}`}>
                                 <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px] border-none bg-gradient-to-br from-white to-gray-100 h-full">
                                     <CardContent className="p-6 flex flex-col items-center">
                                         <div className="mb-4 relative h-28 w-28 overflow-hidden rounded-full bg-sky-100 shadow-inner transform transition-transform duration-300 hover:rotate-3">
