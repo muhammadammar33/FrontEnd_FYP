@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { getBuyers } from "@/actions/get-users";
+import { getStoreBuyers } from "@/actions/get-users";
 
 export async function GET(
-    req: Request,
+    request: Request,
+    { params }: { params: { storeId: string } }
 ) {
-    const buyerCount = await getBuyers();
+    const { storeId } = params;
+    const buyerCount = await getStoreBuyers(storeId);
     return NextResponse.json({ buyerCount });
 }

@@ -20,7 +20,6 @@ export async function GET (
             include: {
                 Image: true,
                 Categories: true,
-                Sizes: true,
                 Colors: true
             }
         })
@@ -69,7 +68,7 @@ export async function PATCH (
 
         if (!ColorId) new NextResponse("Color id is required", { status: 400});
 
-        if (!SizeId) new NextResponse("Size id is required", { status: 400});
+        // if (!SizeId) new NextResponse("Size id is required", { status: 400});
 
         if (!IsFeatured) new NextResponse("Featured is required", { status: 400});
 
@@ -109,7 +108,7 @@ export async function PATCH (
                 IsFeatured,
                 IsArchived,
                 CategoryId,
-                SizeId,
+                SizeId: SizeId || null, // Make SizeId nullable if not provided
                 ColorId,
                 StoreId: storeId,
                 CreatedAt: new Date(),

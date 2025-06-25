@@ -13,7 +13,7 @@ model Products {
   Stock       Int
   UpdatedAt   DateTime    @db.Timestamptz(6)
   StoreId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
-  SizeId      String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  SizeId      String?     @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   ColorId     String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   Id          String      @id(map: "PK_Products") @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
   CategoryId  String      @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
@@ -21,14 +21,13 @@ model Products {
   IsArchived  Boolean     @default(false)
   IsFeatured  Boolean     @default(false)
   Name        String      @default("") @db.VarChar(100)
+  embeddingId String?
   Image       Image[]
   OrderItem   OrderItem[]
   Categories  Categories  @relation(fields: [CategoryId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Categories_CategoryId")
   Colors      Colors      @relation(fields: [ColorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Colors_ColorId")
-  Sizes       Sizes       @relation(fields: [SizeId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Sizes_SizeId")
+  Sizes       Sizes?      @relation(fields: [SizeId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Sizes_SizeId")
   Stores      Stores      @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Stores_StoreId")
-
-  embeddingId String?
 
   @@index([StoreId], map: "IX_Products_StoreId")
   @@index([SizeId], map: "IX_Products_SizeId")
@@ -37,23 +36,23 @@ model Products {
 }
 
 model Stores {
-  Id             String           @id(map: "PK_Stores") @db.Uuid
-  Name           String           @db.VarChar(100)
-  Description    String           @db.VarChar(500)
-  ImageUrl       String           @db.VarChar(255) @default("")
-  UserId         String
-  CreatedAt      DateTime         @db.Timestamptz(6)
-  UpdatedAt      DateTime         @db.Timestamptz(6)
-  Reason         String           @default("") @db.VarChar(500)
-  Status         StoreStatus      @default(PENDING)
-  StoreCategoryId String?         @db.Uuid
-  Billboards     Billboards[]
-  Categories     Categories[]
-  Colors         Colors[]
-  Order          Order[]
-  Products       Products[]
-  Sizes          Sizes[]
-  StoreCategory  StoreCategories? @relation(fields: [StoreCategoryId], references: [Id], onDelete: SetNull, onUpdate: NoAction, map: "FK_Stores_StoreCategories_StoreCategoryId")
+  Id              String           @id(map: "PK_Stores") @db.Uuid
+  Name            String           @db.VarChar(100)
+  Description     String           @db.VarChar(500)
+  UserId          String
+  CreatedAt       DateTime         @db.Timestamptz(6)
+  UpdatedAt       DateTime         @db.Timestamptz(6)
+  Reason          String           @default("") @db.VarChar(500)
+  Status          StoreStatus      @default(PENDING)
+  ImageUrl        String           @default("") @db.VarChar(255)
+  StoreCategoryId String?          @db.Uuid
+  Billboards      Billboards[]
+  Categories      Categories[]
+  Colors          Colors[]
+  Order           Order[]
+  Products        Products[]
+  Sizes           Sizes[]
+  StoreCategory   StoreCategories? @relation(fields: [StoreCategoryId], references: [Id], onUpdate: NoAction, map: "FK_Stores_StoreCategories_StoreCategoryId")
 
   @@index([StoreCategoryId], map: "IX_Stores_StoreCategoryId")
 }
@@ -66,58 +65,54 @@ model EFMigrationsHistory {
 }
 
 model User {
-  id                    String                 @id @default(cuid())
+  id                    String                    @id @default(cuid())
   name                  String?
-  email                 String                 @unique
-  phone                 String?                @unique
+  email                 String                    @unique
+  phone                 String?                   @unique
   emailVerified         DateTime?
   image                 String?
   password              String?
-  role                  UserRole               @default(SELLER)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  isTwoFactorEnabled    Boolean                @default(false)
+  role                  UserRole                  @default(SELLER)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  isTwoFactorEnabled    Boolean                   @default(false)
   accounts              Account[]
-  twoFactorConfirmation TwoFactorConfirmation?
-  storeCategories       StoreCategories[]      
   participants          ConversationParticipant[]
   messages              Message[]
-  orders                Order[]                // Added relation to Order
+  orders                Order[]
+  storeCategories       StoreCategories[]
+  twoFactorConfirmation TwoFactorConfirmation?
 }
 
 model Conversation {
-  id                    String                 @id @default(cuid())
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  participants          ConversationParticipant[]
-  messages              Message[]
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  messages     Message[]
 }
 
-// Join table for the many-to-many relationship between User and Conversation
 model ConversationParticipant {
-  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                String
-  conversation          Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  conversationId        String
-  createdAt             DateTime               @default(now())
+  userId         String
+  conversationId String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, conversationId])
   @@index([userId])
   @@index([conversationId])
 }
 
-// Message model
 model Message {
-  id                    String                 @id @default(cuid())
-  content               String
-  createdAt             DateTime               @default(now())
-  sender                User                   @relation(fields: [senderId], references: [id])
-  senderId              String
-  conversation          Conversation           @relation(fields: [conversationId], references: [id])
-  conversationId        String
+  id             String       @id @default(cuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  senderId       String
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
 }
-
-
 
 model Account {
   userId            String
@@ -172,25 +167,25 @@ model TwoFactorConfirmation {
 }
 
 model Billboards {
-  Id         String       @id(map: "PK_Billboards") @db.Uuid
-  StoreId    String       @db.Uuid
-  Label      String       @db.VarChar(255)
-  ImageUrl   String
-  CreatedAt  DateTime     @db.Timestamptz(6)
-  UpdatedAt  DateTime     @db.Timestamptz(6)
-  Stores     Stores       @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Billboards_Stores_StoreId")
+  Id        String   @id(map: "PK_Billboards") @db.Uuid
+  StoreId   String   @db.Uuid
+  Label     String   @db.VarChar(255)
+  ImageUrl  String
+  CreatedAt DateTime @db.Timestamptz(6)
+  UpdatedAt DateTime @db.Timestamptz(6)
+  Stores    Stores   @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Billboards_Stores_StoreId")
 
   @@index([StoreId], map: "IX_Billboards_StoreId")
 }
 
 model Categories {
-  Id          String     @id(map: "PK_Categories") @db.Uuid
-  StoreId     String     @db.Uuid
-  Name        String     @db.VarChar(255)
-  CreatedAt   DateTime   @db.Timestamptz(6)
-  UpdatedAt   DateTime   @db.Timestamptz(6)
-  Stores      Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Stores_StoreId")
-  Products    Products[]
+  Id        String     @id(map: "PK_Categories") @db.Uuid
+  StoreId   String     @db.Uuid
+  Name      String     @db.VarChar(255)
+  CreatedAt DateTime   @db.Timestamptz(6)
+  UpdatedAt DateTime   @db.Timestamptz(6)
+  Stores    Stores     @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Stores_StoreId")
+  Products  Products[]
 
   @@index([StoreId], map: "IX_Categories_StoreId")
 }
@@ -235,14 +230,14 @@ model Image {
 model Order {
   Id        String      @id(map: "PK_Order") @db.Uuid
   StoreId   String      @db.Uuid
-  userId    String      // Added userId field
   IsPaid    Boolean
   Phone     String      @db.VarChar(255)
   Address   String
   CreatedAt DateTime    @db.Timestamptz(6)
   UpdatedAt DateTime    @db.Timestamptz(6)
+  userId    String
   Stores    Stores      @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Order_Stores_StoreId")
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Added relation to User
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   OrderItem OrderItem[]
 
   @@index([StoreId], map: "IX_Order_StoreId")
@@ -266,8 +261,8 @@ model StoreCategories {
   Description String?  @db.VarChar(500)
   CreatedAt   DateTime @default(now()) @db.Timestamptz(6)
   UpdatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  CreatedById String   // Add field to track which admin created this category
-  CreatedBy   User     @relation(fields: [CreatedById], references: [id], onDelete: Cascade) // Relation to User model
+  CreatedById String
+  CreatedBy   User     @relation(fields: [CreatedById], references: [id], onDelete: Cascade)
   Stores      Stores[]
 
   @@index([CreatedById], map: "IX_StoreCategories_CreatedById")

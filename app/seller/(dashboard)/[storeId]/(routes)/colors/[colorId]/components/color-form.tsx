@@ -6,7 +6,7 @@ import { Colors } from "@prisma/client";
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Trash } from "lucide-react";
+import { Trash, ArrowLeft } from "lucide-react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,6 +15,7 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { AlertModal } from '@/components/modals/alert-modal';
+import Link from "next/link"
 
 interface SettingsFromProps {
     initialData: Colors | null; 
@@ -59,7 +60,8 @@ export const ColorForm: React.FC<SettingsFromProps> = ({ initialData }) => {
                 await axios.post(`/api/${params.storeId}/colors`, data)
             }
             router.refresh();
-            router.push(`/seller/${params.storeId}`);
+            // router.push(`/seller/${params.storeId}`);
+            window.location.assign(`/seller/${params.storeId}?tab=colors`)
             toast.success(toastMessage)
         } catch(err) {
             toast.error("Something went wrong.");
@@ -91,6 +93,14 @@ export const ColorForm: React.FC<SettingsFromProps> = ({ initialData }) => {
             onConfirm={onDelete}
             loading={loading}
             />
+            <div className="flex items-center justify-between">
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={`/seller/${params.storeId}?tab=colors`}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Colors
+                    </Link>
+                </Button>
+            </div>
             <div className="flex items-center justify-between">
                 <Heading title={title} description={description} />
                 {initialData && (

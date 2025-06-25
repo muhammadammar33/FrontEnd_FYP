@@ -7,7 +7,7 @@ import * as z from "zod"
 import type { Categories, Colors, Image, Products, Sizes } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Trash, Loader2 } from "lucide-react"
+import { Trash, Loader2, ArrowLeft } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -21,6 +21,7 @@ import ImageUpload from "@/components/ui/image-upload"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
 
 interface ProductFormProps {
     initialData:
@@ -41,7 +42,7 @@ const formSchema = z.object({
     Price: z.coerce.number().min(1),
     CategoryId: z.string().min(1),
     ColorId: z.string().min(1),
-    SizeId: z.string().min(1),
+    SizeId: z.string().optional(), // Changed from .min(1) to .optional()
     IsFeatured: z.boolean().default(false).optional(),
     IsArchived: z.boolean().default(false).optional(),
 })
@@ -69,6 +70,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
             ...initialData,
             Images: initialData.Images.map((image) => ({ url: image.Url })),
             Price: Number.parseFloat(String(initialData?.Price)),
+            SizeId: initialData.SizeId || undefined,
             }
         : {
             Name: "",
@@ -170,6 +172,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
     return (
         <>
         <AlertModal isOpen={open} onClose={() => setOpen(false)} onConfirm={onDelete} loading={loading} />
+        <div className="flex items-center justify-between">
+            <Button variant="outline" size="sm" asChild>
+                <Link href={`/seller/${params.storeId}?tab=products`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Products
+                </Link>
+            </Button>
+            
+        </div>
         <div className="space-y-4">
             <div className="flex items-center justify-between">
             <div>
@@ -347,7 +358,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
                         name="SizeId"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Size</FormLabel>
+                            <FormLabel>Size <span className="text-muted-foreground text-sm">(Optional)</span></FormLabel>
                             <Select
                             disabled={loading}
                             onValueChange={field.onChange}
@@ -356,7 +367,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
                             >
                             <FormControl>
                                 <SelectTrigger>
-                                <SelectValue defaultValue={field.value} placeholder="Select a size" />
+                                <SelectValue defaultValue={field.value} placeholder="Select a size (optional)" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -367,6 +378,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, Categorie
                                 ))}
                             </SelectContent>
                             </Select>
+                            <FormDescription>Size selection is optional for this product.</FormDescription>
                             <FormMessage />
                         </FormItem>
                         )}

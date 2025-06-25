@@ -36,6 +36,8 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
     const [loading, setLoading] = useState(false)
     const [open, setOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 5
 
     const router = useRouter()
     const params = useParams()
@@ -45,6 +47,25 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
         category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         category.id.toLowerCase().includes(searchTerm.toLowerCase())
     )
+    
+    // Calculate pagination values
+    const totalPages = Math.ceil(filteredCategories.length / itemsPerPage)
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = filteredCategories.slice(indexOfFirstItem, indexOfLastItem)
+    
+    // Handle pagination
+    const goToNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+    
+    const goToPreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
 
     const onDelete = async (id: string) => {
         try {
@@ -158,7 +179,7 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
                     </TableCell>
                     </TableRow>
                 ) : (
-                    filteredCategories.map((category) => (
+                    currentItems.map((category) => (
                     <TableRow key={category.id}>
                         <TableCell>
                         <div className="font-medium">{category.name}</div>
@@ -213,15 +234,30 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
 
         <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-            Showing <strong>{filteredCategories.length}</strong> of <strong>{categories.length}</strong> categories
+                Showing <strong>{currentItems.length}</strong> of <strong>{filteredCategories.length}</strong> categories
+                {totalPages > 0 && (
+                    <span className="ml-2">
+                        (Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>)
+                    </span>
+                )}
             </div>
             <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" disabled={filteredCategories.length === 0}>
-                Previous
-            </Button>
-            <Button variant="outline" size="sm" disabled={filteredCategories.length === 0}>
-                Next
-            </Button>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={currentPage === 1 || filteredCategories.length === 0}
+                    onClick={goToPreviousPage}
+                >
+                    Previous
+                </Button>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={currentPage >= totalPages || filteredCategories.length === 0}
+                    onClick={goToNextPage}
+                >
+                    Next
+                </Button>
             </div>
         </div>
         </div>

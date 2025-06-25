@@ -43,6 +43,8 @@ export default function ProductsTable({ products }: ProductsTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     const router = useRouter();
     const params = useParams();
@@ -53,6 +55,24 @@ export default function ProductsTable({ products }: ProductsTableProps) {
         product.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.toLowerCase().includes(searchTerm.toLowerCase()),
     )
+
+    // Calculate pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     const getStatusFromStock = (stock: number): string => {
         if (stock <= 0) return "Out of Stock";
@@ -173,14 +193,14 @@ export default function ProductsTable({ products }: ProductsTableProps) {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {filteredProducts.length === 0 ? (
+                {currentItems.length === 0 ? (
                     <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
                         No products found.
                     </TableCell>
                     </TableRow>
                 ) : (
-                    filteredProducts.map((product) => {
+                    currentItems.map((product) => {
                         const onDelete = async () => {
                             try {
                                 setLoading(true);
@@ -265,15 +285,28 @@ export default function ProductsTable({ products }: ProductsTableProps) {
 
         <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-            Showing <strong>{filteredProducts.length}</strong> of <strong>{products.length}</strong> products
+                Showing <strong>{indexOfFirstItem + 1}</strong> to <strong>{Math.min(indexOfLastItem, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> products
             </div>
             <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" disabled={filteredProducts.length === 0}>
-                Previous
-            </Button>
-            <Button variant="outline" size="sm" disabled={filteredProducts.length === 0}>
-                Next
-            </Button>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={currentPage === 1 || filteredProducts.length === 0}
+                    onClick={handlePrevPage}
+                >
+                    Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages || 1}
+                </span>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={currentPage >= totalPages || filteredProducts.length === 0}
+                    onClick={handleNextPage}
+                >
+                    Next
+                </Button>
             </div>
         </div>
         </div>

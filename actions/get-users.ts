@@ -19,3 +19,21 @@ export const getBuyers = async () => {
 
     return buyersCount;
 }
+
+export const getStoreBuyers = async (storeId: string) => {
+    // Count unique buyers who have placed orders with this store
+    const uniqueBuyers = await db.order.findMany({
+        where: {
+            StoreId: storeId,
+        },
+        select: {
+            userId: true,
+        },
+        distinct: ['userId'],
+    });
+
+    // Get count of unique buyers
+    const buyersCount = uniqueBuyers.length;
+
+    return buyersCount;
+}

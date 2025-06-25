@@ -44,8 +44,6 @@ export async function POST(
 
         if (!ColorId) new NextResponse("Color id is required", { status: 400});
 
-        if (!SizeId) new NextResponse("Size id is required", { status: 400});
-
         if (!IsFeatured) new NextResponse("Featured is required", { status: 400});
 
         if (!IsArchived) new NextResponse("Archived is required", { status: 400});
@@ -89,7 +87,7 @@ export async function POST(
                 IsFeatured,
                 IsArchived,
                 CategoryId,
-                SizeId,
+                SizeId: SizeId || null, // Make SizeId nullable if not provided
                 ColorId,
                 StoreId: storeId,
                 CreatedAt: new Date(),
@@ -97,9 +95,9 @@ export async function POST(
             }
         })
 
-        console.log("try to generate vector embeddings");
-        const recommendations = await fetch(`http://localhost:3002/recommendations/embed/${product.Id}`)
-        console.log("recommendations response", recommendations);
+        // console.log("try to generate vector embeddings");
+        // const recommendations = await fetch(`http://localhost:3002/recommendations/embed/${product.Id}`)
+        // console.log("recommendations response", recommendations);
         return NextResponse.json(product);
 
     } catch (err) {
@@ -129,7 +127,7 @@ export async function GET(
                 StoreId: storeId,
                 CategoryId,
                 ColorId,
-                SizeId,
+                SizeId: SizeId ? SizeId : undefined, // Update query to handle optional SizeId
                 IsFeatured: IsFeatured ? true : undefined,
                 IsArchived: false
             },

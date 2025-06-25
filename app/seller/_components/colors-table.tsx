@@ -37,6 +37,8 @@ export default function ColorsTable({ colors }: ColorsTableProps) {
     const [loading, setLoading] = useState(false)
     const [open, setOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 6
 
     const router = useRouter()
     const params = useParams()
@@ -47,6 +49,29 @@ export default function ColorsTable({ colors }: ColorsTableProps) {
         color.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         color.value.toLowerCase().includes(searchTerm.toLowerCase()),
     )
+
+    // Calculate total pages
+    const totalPages = Math.ceil(filteredColors.length / itemsPerPage)
+    
+    // Get current page items
+    const getCurrentPageItems = () => {
+        const startIndex = (currentPage - 1) * itemsPerPage
+        const endIndex = startIndex + itemsPerPage
+        return filteredColors.slice(startIndex, endIndex)
+    }
+    
+    // Handle page navigation
+    const goToNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+    
+    const goToPreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
 
     const onDelete = async (id: string) => {
         try {
@@ -159,7 +184,7 @@ export default function ColorsTable({ colors }: ColorsTableProps) {
                     </TableCell>
                     </TableRow>
                 ) : (
-                    filteredColors.map((color) => (
+                    getCurrentPageItems().map((color) => (
                     <TableRow key={color.id}>
                         <TableCell>
                         <div
@@ -224,13 +249,28 @@ export default function ColorsTable({ colors }: ColorsTableProps) {
 
         <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-            Showing <strong>{filteredColors.length}</strong> of <strong>{colors.length}</strong> colors
+            Showing <strong>{getCurrentPageItems().length}</strong> of <strong>{filteredColors.length}</strong> colors
+            {totalPages > 0 && (
+                <span className="ml-2">
+                Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                </span>
+            )}
             </div>
             <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" disabled={filteredColors.length === 0}>
+            <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === 1 || filteredColors.length === 0}
+                onClick={goToPreviousPage}
+            >
                 Previous
             </Button>
-            <Button variant="outline" size="sm" disabled={filteredColors.length === 0}>
+            <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage >= totalPages || filteredColors.length === 0}
+                onClick={goToNextPage}
+            >
                 Next
             </Button>
             </div>

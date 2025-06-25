@@ -74,7 +74,7 @@ const SellerDashboardPage = async ({ params }: { params: Promise<{ storeId: stri
         price: formatter.format(Number(item.Price)),
         stock: item.Stock,
         category: item.Categories.Name,
-        size: item.Sizes.Name,
+        size: item.Sizes?.Name || "N/A",
         color: item.Colors.Value,
         createdAt: format(item.CreatedAt, "MMMM do, yyyy"),
         imageUrl: item.Image && item.Image.length > 0 
