@@ -26,11 +26,14 @@ const ProductPage = async ({ params }: { params: Params }) => {
             Id: product?.CategoryId,
         },
     });
-    const Size = await db.sizes.findFirst({
+    
+    // Update to handle optional SizeId
+    const Size = product?.SizeId ? await db.sizes.findFirst({
         where: {
-            Id: product?.SizeId,
+            Id: product.SizeId,
         }
-    });
+    }) : null;
+    
     const Color = await db.colors.findFirst({
         where: {
             Id: product?.ColorId,
@@ -98,11 +101,14 @@ const ProductPage = async ({ params }: { params: Params }) => {
                 Id: product.CategoryId,
             },
         });
-        const Size = await db.sizes.findFirst({
+        
+        // Update to handle optional SizeId in suggested products
+        const Size = product.SizeId ? await db.sizes.findFirst({
             where: {
                 Id: product.SizeId,
             }
-        });
+        }) : null;
+        
         const Color = await db.colors.findFirst({
             where: {
                 Id: product.ColorId,

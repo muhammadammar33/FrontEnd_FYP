@@ -374,7 +374,7 @@ export default function Chat() {
                                         {/* User Info */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-baseline">
-                                                <h2 className="font-semibold truncate">{otherUser?.name || otherUser?.email || 'Unknown User'}</h2>
+                                                <h2 className="font-semibold text-gray-800 truncate">{otherUser?.name || otherUser?.email || 'Unknown User'}</h2>
                                                 {lastMessage && (
                                                     <span className="text-xs text-gray-500">
                                                         {formatTime(lastMessage.createdAt)}

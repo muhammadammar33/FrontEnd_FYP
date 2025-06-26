@@ -59,11 +59,14 @@ const HomePage = async ({ params }: StorePageProps) => {
                 Id: product.CategoryId,
             },
         });
-        const Size = await db.sizes.findFirst({
+        
+        // Handle optional SizeId
+        const Size = product.SizeId ? await db.sizes.findFirst({
             where: {
                 Id: product.SizeId,
             }
-        });
+        }) : null;
+        
         const Color = await db.colors.findFirst({
             where: {
                 Id: product.ColorId,
@@ -112,7 +115,6 @@ const HomePage = async ({ params }: StorePageProps) => {
             }))
         };
     }));
-    console.log(products);
 
     return (
         <Container>
